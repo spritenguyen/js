@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name          Font style css
-// @namespace SpriteNguyen
+// @namespace    SpriteNguyen
 // match        *://voz.vn/*
 // match        *://vnexpress.net/*
 // match        *://dantri.com.vn/*
@@ -13,6 +13,7 @@
 // @description 26/12/2022
 // @author         zNDB
 // @run-at          document-start
+// @antifeature  tracking
 // @icon        https://e7.pngegg.com/pngimages/247/169/png-clipart-high-heeled-shoe-supermodel-scary-beautiful-model-celebrities-fashion.png
 // ==/UserScript==
 (function() {
