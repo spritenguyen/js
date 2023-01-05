@@ -2,7 +2,7 @@
 // @name          Font family
 // @namespace SpriteNguyen
 // @match      *://*/*
-// @version        0.1
+// @version        0.2
 // @description 05/01/2023
 // @author         zNDB
 // @run-at          document-start
