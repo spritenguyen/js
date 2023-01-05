@@ -1,15 +1,11 @@
 // ==UserScript==
-// @name          Font style css
+// @name          style text
 // @namespace SpriteNguyen
-// match        *://voz.vn/*
-// match        *://vnexpress.net/*
-// match        *://dantri.com.vn/*
-// match        *://ielts-fighter.com/*
 // @match      *://*/*
 // @exclude     *://listenaminute.com/*
 // @exclude     *://docsach24.co/*
 // @exclude     *://truyenful.vn/*
-// @version        0.2
+// @version        0.3
 // @description 26/12/2022
 // @author         zNDB
 // @run-at          document-start
