@@ -10,7 +10,7 @@
 // ==/UserScript==
 (function() {
 
-var css = ["@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap'); *{font-family: 'Poppins', sans-serif !important;}"].join("\n");
+var css = ["@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap'); *{font-family: 'Raleway', sans-serif !important;}"].join("\n");
   //https://fonts.google.com/specimen/Poppins link font chu
 
 if (typeof GM_addStyle != 'undefined') {
