@@ -10,7 +10,7 @@
 // ==/UserScript==
 (function() {
 
-var css = ["@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans&family=Quicksand:wght@500&display=swap'); a,p,i,span,.bbWrapper{font-family: 'Quicksand', sans-serif !important;}"].join("\n");
+var css = ["@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans&family=Quicksand:wght@500&display=swap'); a,p,span,.bbWrapper{font-family: 'Quicksand', sans-serif !important;}"].join("\n");
   //https://fonts.google.com/specimen/Poppins link font chu
 
 if (typeof GM_addStyle != 'undefined') {
