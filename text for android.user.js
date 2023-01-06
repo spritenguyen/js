@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          style text
+// @name          style text for android
 // @namespace SpriteNguyen
 // @match      *://*/*
 // @exclude     *://listenaminute.com/*
