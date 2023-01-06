@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        js for PC
+// @name        text for PC
 // @namespace   SpriteNguyen
 // @match       *://*/*
 // @exclude     *://www.xvideos.com/*
