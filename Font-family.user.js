@@ -2,7 +2,7 @@
 // @name          Font family
 // @namespace SpriteNguyen
 // @match      *://*/*
-// @version        0.2.1
+// @version        0.2.1.1
 // @description 05/01/2023
 // @author         zNDB
 // @run-at          document-start
@@ -10,7 +10,7 @@
 // ==/UserScript==
 (function() {
 
-var css = ["@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans&display=swap'); *{font-family: 'Plus Jakarta Sans', sans-serif !important;}"].join("\n");
+var css = ["@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans&family=Quicksand:wght@500&display=swap'); a,p,i,span,.bbWrapper{font-family: 'Quicksand', sans-serif !important;}"].join("\n");
   //https://fonts.google.com/specimen/Poppins link font chu
 
 if (typeof GM_addStyle != 'undefined') {
