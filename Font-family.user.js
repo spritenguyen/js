@@ -2,6 +2,7 @@
 // @name          Font family
 // @namespace SpriteNguyen
 // @match      *://*/*
+// @exclude     *://biphim.*/*
 // @version        0.2.1.1
 // @description 05/01/2023
 // @author         zNDB
