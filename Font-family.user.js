@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name          Font family
 // @namespace SpriteNguyen
-// @match      *://*/*
+// @match      *://voz.vn/*
 // @exclude     *://biphims.*/*
-// @version        0.2.1.1
+// @version        0.2.1.2
 // @description 05/01/2023
 // @author         zNDB
 // @run-at          document-start
