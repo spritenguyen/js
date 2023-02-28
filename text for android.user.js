@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name          style text for android
 // @namespace SpriteNguyen
-// @match      *://*/*
+/*// @match      *://*/* */
+// @match       *://voz.vn/*
 // @exclude     *://listenaminute.com/*
 // @exclude     *://docsach24.co/*
 // @exclude     *://truyenful.vn/*
-// @version        0.3
-// @description 26/12/2022
+// @version        0.4
+// @description   26/12/2022
 // @author         zNDB
 // @run-at          document-start
 // @icon        https://e7.pngegg.com/pngimages/247/169/png-clipart-high-heeled-shoe-supermodel-scary-beautiful-model-celebrities-fashion.png
