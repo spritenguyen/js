@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         m3u8视频侦测下载器【自动嗅探】 1
-// @name:zh-CN   m3u8视频侦测下载器【自动嗅探】 1
-// @name:zh-TW   m3u8視頻偵測下載器【自動嗅探】 1
-// @name:en      M3U8 Video Detector and Downloader 1
-// @version      1.3.2
+// @name         MPV-M3U8 Video Detector and Downloader
+// @name:zh-CN   m3u8视频侦测下载器【自动嗅探】
+// @name:zh-TW   m3u8視頻偵測下載器【自動嗅探】
+// @name:en      MPV-M3U8 Video Detector and Downloader
+// @version      1.4.1
 // @description  自动检测页面m3u8视频并进行完整下载。检测到m3u8链接后会自动出现在页面右上角位置，点击下载即可跳转到m3u8下载器。
 // @description:zh-CN  自动检测页面m3u8视频并进行完整下载。检测到m3u8链接后会自动出现在页面右上角位置，点击下载即可跳转到m3u8下载器。
 // @description:zh-TW  自動檢測頁面m3u8視頻並進行完整下載。檢測到m3u8鏈接後會自動出現在頁面右上角位置，點擊下載即可跳轉到m3u8下載器。
@@ -11,8 +11,9 @@
 // @icon         https://tools.thatwind.com/favicon.png
 // @author       allFull
 // @namespace    https://tools.thatwind.com/
-// @homepage     https://tools.thatwind.com/tool/m3u8downloader
+// @homepage
 // @match        *://*/*
+// @exclude      *://www.diancigaoshou.com/*
 // @require      https://cdn.jsdelivr.net/npm/m3u8-parser@4.7.1/dist/m3u8-parser.min.js
 // @connect      *
 // @grant        unsafeWindow
@@ -56,6 +57,9 @@
             return ((typeof GM_xmlhttpRequest === "function") ? GM_xmlhttpRequest : GM.xmlHttpRequest)(details);
         },
         download(details) {
+
+            return this.openInTab(details.url);
+
             if (typeof GM_download === "function") {
                 this.message("下载中，请留意浏览器下载弹窗\nDownloading, pay attention to the browser's download pop-up.", 3000);
                 return GM_download(details);
@@ -273,8 +277,8 @@
             data-number="0"
             style="
                 display: inline-flex;
-                width: 25px;
-                height: 25px;
+                width: 20px;
+                height: 20px;
                 background: black;
                 padding: 10px;
                 border-radius: 100px;
@@ -335,8 +339,12 @@
             padding: 3px 5px;
         }
 
-        .copy-link:active{
-            color: #ccc;
+        .copy-link:link{
+            text-decoration: none;
+        }
+
+        .copy-link:hover{
+            text-decoration: underline;
         }
 
         .download-btn:hover{
@@ -346,23 +354,16 @@
             opacity: 0.9;
         }
 
-        .mpv:link{
-            text-decoration: none;
-        }
-
-        .mpv:hover{
-            text-decoration: underline;
-        }
-
         .m3u8-item{
             color: white;
             margin-bottom: 5px;
             display: flex;
             flex-direction: row;
+            align-items: baseline;
             background: black;
             padding: 3px 10px;
             border-radius: 3px;
-            font-size: 14px;
+            font-size: 12px;
             user-select: none;
         }
 
@@ -543,17 +544,15 @@
         div.className = "m3u8-item";
         div.innerHTML = `
             <span>${type}</span>
-            <span
-                class="copy-link"
-                title="${url}"
-                style="
-                    max-width: 200px;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    margin-left: 10px;
-                "
-            >${url.pathname}</span>
+            <a class="copy-link" href="${url.href}" title="${url}" style="
+                color: white;
+                max-width: 200px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                margin-left: 10px;
+                cursor:pointer;"
+            target="_blank" >${url.pathname}</a>
             <span
                 style="
                     margin-left: 10px;
@@ -565,9 +564,8 @@
                 style="
                     margin-left: 10px;
                     cursor: pointer;
-            ">Download</span>
+            ">⯆</span>
         `;
-        div.innerHTML += '<a  class="mpv" target="_blank" href="' + url.href + '" style=" color: white; margin-left: 10px; cursor:pointer; "> MPV</a>';
 
         div.querySelector(".copy-link").addEventListener("click", () => {
             // 复制链接
@@ -586,6 +584,176 @@
         bar.querySelector(".number-indicator").setAttribute("data-number", count);
 
         wrapper.appendChild(div);
+    }
+
+})();
+
+(function () {
+    'use strict';
+
+    const reg = /magnet:\?xt=urn:btih:\w{10,}([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+
+    let l = navigator.language || "en";
+    if (l.startsWith("en-")) l = "en";
+    else if (l.startsWith("zh-")) l = "zh-CN";
+    else l = "en";
+
+    const T = {
+        "en": {
+            play: "Play"
+        },
+        "zh-CN": {
+            play: '播放'
+        }
+    }[l];
+
+    whenDOMReady(() => {
+        addStyle(`
+            button[data-wtmzjk-mag-url]{
+                all: initial;
+                border: none;
+                outline: none;
+                background: none;
+                background: #f7d308;
+                background: #08a6f7;
+                margin: 2px 8px;
+                border-radius: 3px;
+                color: white;
+                cursor: pointer;
+                display: inline-flex;
+                height: 1.6em;
+                padding: 0 .8em;
+                align-items: center;
+                justify-content: center;
+                transition: background .15s;
+                text-decoration: none;
+                border-radius: 0.8em;
+                font-size: small;
+            }
+            button[data-wtmzjk-mag-url]>svg{
+                height: 60%;
+                fill: white;
+                pointer-events: none;
+            }
+            button[data-wtmzjk-mag-url]:hover{
+                background: #fae157;
+                background: #39b9f9;
+            }
+            button[data-wtmzjk-mag-url]:active{
+                background: #dfbe07;
+                background: #0797df;
+            }
+            button[data-wtmzjk-mag-url]>span{
+                pointer-events: none;
+                font-size: small;margin-right: .5em;font-weight:bold;color:white !important;
+            }
+        `);
+        window.addEventListener("click", onEvents, true);
+        window.addEventListener("mousedown", onEvents, true);
+        window.addEventListener("mouseup", onEvents, true);
+
+        watchBodyChange(work);
+    });
+
+    function onEvents(e) {
+        if (e.target.hasAttribute('data-wtmzjk-mag-url')) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.type == "click") {
+                let a = document.createElement('a');
+                a.href = 'https://www.diancigaoshou.com/#' + new URLSearchParams({ url: e.target.getAttribute('data-wtmzjk-mag-url') });
+                a.target = "_blank";
+                a.click();
+            }
+        }
+    }
+
+
+
+    function createWatchButton(url, isForPlain = false) {
+        let button = document.createElement("button");
+        button.setAttribute('data-wtmzjk-mag-url', url);
+        if (isForPlain) button.setAttribute('data-wtmzjk-button-for-plain', '');
+        button.innerHTML = `<span>${T.play}</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Pro 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg>`;
+        return button;
+    }
+
+    function hasPlainMagUrlThatNotHandled() {
+        let m = document.body.textContent.match(new RegExp(reg, 'g'));
+        return document.querySelectorAll(`[data-wtmzjk-button-for-plain]`).length != (m ? m.length : 0);
+    }
+
+    function work() {
+        if (!document.body) return;
+        if (hasPlainMagUrlThatNotHandled()) {
+            for (let node of getAllTextNodes(document.body)) {
+                if (node.nextSibling && node.nextSibling.hasAttribute && node.nextSibling.hasAttribute('data-wtmzjk-mag-url')) continue;
+                let text = node.nodeValue;
+                if (!reg.test(text)) continue;
+                let match = text.match(reg);
+                if (match) {
+                    let url = match[0];
+                    let p = node.parentNode;
+                    p.insertBefore(document.createTextNode(text.slice(0, match.index + url.length)), node);
+                    p.insertBefore(createWatchButton(url, true), node);
+                    p.insertBefore(document.createTextNode(text.slice(match.index + url.length)), node);
+                    p.removeChild(node);
+                }
+            }
+        }
+        for (let a of Array.from(document.querySelectorAll(
+            ['href', 'value', 'data-clipboard-text', 'data-value', 'title', 'alt', 'data-url', 'data-magnet', 'data-copy'].map(n => `[${n}*="magnet:?xt=urn:btih:"]`).join(',')
+        ))) {
+            if (a.nextSibling && a.nextSibling.hasAttribute && a.nextSibling.hasAttribute('data-wtmzjk-mag-url')) continue; // 已经添加
+            if (reg.test(a.textContent)) continue;
+            for (let attr of a.getAttributeNames()) {
+                let val = a.getAttribute(attr);
+                if (!reg.test(val)) continue;
+                let url = val.match(reg)[0];
+                a.parentNode.insertBefore(createWatchButton(url), a.nextSibling);
+            }
+        }
+    }
+
+
+    function watchBodyChange(onchange) {
+        let timeout;
+        let observer = new MutationObserver(() => {
+            if (!timeout) {
+                timeout = setTimeout(() => {
+                    timeout = null;
+                    onchange();
+                }, 200);
+            }
+        });
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            characterData: true
+        });
+
+    }
+
+    function getAllTextNodes(parent) {
+        var re = [];
+        if (["STYLE", "SCRIPT", "BASE", "COMMAND", "LINK", "META", "TITLE", "XTRANS-TXT", "XTRANS-TXT-GROUP", "XTRANS-POPUP"].includes(parent.tagName)) return re;
+        for (let node of parent.childNodes) {
+            if (node.childNodes.length) re = re.concat(getAllTextNodes(node));
+            else if (Text.prototype.isPrototypeOf(node) && (!node.nodeValue.match(/^\s*$/))) re.push(node);
+        }
+        return re;
+    }
+
+    function whenDOMReady(f) {
+        if (document.body) f();
+        else window.addEventListener("DOMContentLoaded", f);
+    }
+
+    function addStyle(s) {
+        let style = document.createElement("style");
+        style.innerHTML = s;
+        document.documentElement.appendChild(style);
     }
 
 })();
