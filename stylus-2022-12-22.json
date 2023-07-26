@@ -1,0 +1,265 @@
+[
+  {
+    "settings": {
+      "openEditInWindow": false,
+      "openEditInWindow.popup": false,
+      "windowPosition": {},
+      "show-badge": true,
+      "disableAll": false,
+      "exposeIframes": false,
+      "exposeStyleName": false,
+      "newStyleAsUsercss": true,
+      "styleViaXhr": false,
+      "patchCsp": false,
+      "config.autosave": true,
+      "schemeSwitcher.enabled": "system",
+      "schemeSwitcher.nightStart": "18:00",
+      "schemeSwitcher.nightEnd": "06:00",
+      "popup.breadcrumbs": true,
+      "popup.breadcrumbs.usePath": false,
+      "popup.enabledFirst": true,
+      "popup.stylesFirst": true,
+      "popup.autoResort": false,
+      "popup.borders": false,
+      "popup.findSort": "u",
+      "manage.onlyEnabled": false,
+      "manage.onlyLocal": false,
+      "manage.onlyUsercss": false,
+      "manage.onlyEnabled.invert": false,
+      "manage.onlyLocal.invert": false,
+      "manage.onlyUsercss.invert": false,
+      "manage.actions.expanded": true,
+      "manage.backup.expanded": true,
+      "manage.filters.expanded": true,
+      "manage.newUI": true,
+      "manage.newUI.favicons": false,
+      "manage.newUI.faviconsGray": true,
+      "manage.newUI.targets": 3,
+      "manage.newUI.sort": "title,asc",
+      "editor.options": {},
+      "editor.toc.expanded": true,
+      "editor.options.expanded": true,
+      "editor.lint.expanded": true,
+      "editor.publish.expanded": true,
+      "editor.lineWrapping": true,
+      "editor.smartIndent": true,
+      "editor.indentWithTabs": false,
+      "editor.tabSize": 4,
+      "editor.keyMap": "sublime",
+      "editor.theme": "default",
+      "editor.beautify": {
+        "selector_separator_newline": true,
+        "newline_before_open_brace": false,
+        "newline_after_open_brace": true,
+        "newline_between_properties": true,
+        "newline_before_close_brace": true,
+        "newline_between_rules": false,
+        "preserve_newlines": true,
+        "end_with_newline": false,
+        "indent_conditional": true,
+        "indent_mozdoc": true
+      },
+      "editor.beautify.hotkey": "",
+      "editor.lintDelay": 300,
+      "editor.linter": "csslint",
+      "editor.lintReportDelay": 500,
+      "editor.matchHighlight": "token",
+      "editor.autoCloseBrackets": true,
+      "editor.autocompleteOnTyping": true,
+      "editor.contextDelete": false,
+      "editor.selectByTokens": true,
+      "editor.appliesToLineWidget": true,
+      "editor.autosaveDraft": 10,
+      "editor.livePreview": true,
+      "editor.colorpicker": true,
+      "editor.colorpicker.hexUppercase": false,
+      "editor.colorpicker.hotkey": "",
+      "editor.colorpicker.color": "#f3f3f3",
+      "editor.colorpicker.maxHeight": 300,
+      "hotkey._execute_browser_action": "",
+      "hotkey.openManage": "",
+      "hotkey.styleDisableAll": "",
+      "sync.enabled": "none",
+      "iconset": -1,
+      "badgeDisabled": "#8B0000",
+      "badgeNormal": "#006666",
+      "headerWidth.edit": 280,
+      "headerWidth.install": 280,
+      "headerWidth.manage": 280,
+      "popupWidth": 246,
+      "updateInterval": 24
+    },
+    "order": {
+      "main": [],
+      "prio": []
+    }
+  },
+  {
+    "enabled": false,
+    "installDate": 1671169118349,
+    "sections": [
+      {
+        "code": ""
+      }
+    ],
+    "sourceCode": "/* ==UserStyle==\n@name         Voz.vn Dark Mode\n@version      20210907.08.53\n@namespace    userstyles.world/user/nguyentdat27\n@description  Dark mode for voz.vn forum\n@author       nguyentdat27\n@license      No License\n==/UserStyle== */\n@-moz-document domain(\"voz.vn\") {\n    \n    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans&family=Quicksand:wght@500&display=swap');\n  /*  @font-face{font-family: VeraSeBd; src: url(\"https://mdn.github.io/css-examples/web-fonts/VeraSeBd.ttf\");}\n\n/**********ccs thread***************/\n     /*style binh chon*/\n    .iconic-label{\n        color:red;\n    }\n    i{\n        color: #f70;\n    }\n    .iconic--radio.iconic{\n        color: pink;\n    }\n    .p-nav-smallLogo{\n        background:#f70;\n    }\n    /*thanh lat trang*/\n    .block-outer-main{\n        position: static;/*static*/\n        \n        z-index:0;/*0 de hien watch*/\n    }\n    /**khung trich dan comment**/\n    .bbCodeBlock-expandLink{\n        background: #0000;\n    }\n    .bbCodeBlock-expandContent{\n        color: yellow;\n        font-style: italic;\n    }\n    /**********************/\n    .bbWrapper {\n        color: gray;\n        font-size: 20px;\n        font-family: 'Quicksand', sans-serif;\n        background:#222222;\n        \n    }\n   \n    .message-cell{\n        background:#222222;\n        border: 0px solid orange;\n        \n    }\n    .fr-top.fr-basic.fr-ltr.bbWrapper.fr-box {\n        background: #444444;\n    }\n\n    .fr-view.fr-element > p {\n        color: #ffff00;\n    }\n\n    .message-inner > .message-cell--user.message-cell > .message-user > .message-userDetails > .message-userTitle.userTitle {\n        color: red;\n    }\n    .message-user{\n        border: 0.01px solid grey;\n    }\n\n    .message-inner > .message-cell--user.message-cell > .message-user > .message-userDetails > .joindate.message-userTitle {\n        color: orange;\n    }\n\n    .message-inner > .message-cell--main.message-cell > .js-quickEditTarget.message-main > .js-messageContent.message-content > .message-signature > .bbWrapper {\n        font-size: 12px;\n    }\n\n    .is-unread.menu-row--clickable.menu-row--separated.menu-row.js-alert.alert {\n        background: #333333;\n    }\n\n    .forum_view {\n        background: #333333;\n    }\n\n    .u-jsOnly.inputGroup--joined.inputGroup > .inputGroup-text {\n        background: #333333;\n    }\n\n    .actionBar-action {\n        background: #333333;\n    }\n\n    .message-inner {\n        background: #333333;\n        border: 0.1px solid orange;\n    }\n\n    .message-cell--user.message-cell {\n        background: #333333;\n    }\n\n    .js-expandWatch.bbCodeBlock--quote.bbCodeBlock--expandable.bbCodeBlock {\n        background: #333333;\n        border: 0.01px solid grey;\n    }\n\n    .is-active.js-reactionsList.reactionsBar {\n        background: #444444;\n    }\n\n    .message-inner > .message-cell--main.message-cell > .js-quickEditTarget.message-main > .js-messageContent.message-content > .js-lbContainer.lbContainer.message-userContent > .js-selectToQuote.message-body > .bbWrapper > .js-expandWatch.bbCodeBlock--quote.bbCodeBlock--expandable.bbCodeBlock > .bbCodeBlock-title {\n        background: #333333;\n    }\n\n    /*css home*/\n    /**info member at home**/\n    .memberProfileBanner{\n        background:#444444;\n    }\n    .memberTooltip-nameWrapper{\n        color:orange;\n    }\n    .preview-tooltip {\n        background: #333333;\n    }\n\n    .block-container {\n        background: #333333;\n    }\n\n    .block-filterBar {\n        background: #333333;\n    }\n\n    .menu-content > .menu-footer--split.menu-footer {\n        background: gray;\n    }\n\n    .u-dt {\n        color: #ffffff;\n    }\n\n    .menu-content {\n        background: #333333;\n    }\n    /*thông báo*/\n    .is-unread.block-row--separated.block-row.js-alert.alert{\n        background:#333333;\n    }\n    /*info trang user*/\n    .memberHeader-mainContent{\n        background: #333333;\n        color:yellow;\n    }\n    .username{\n        color:orange;\n    }\n    .message-responseRow{\n        background:#444444;\n    }\n    .comment-inner{\n        background:#222222;\n       \n    }\n    /*********************************/\n    .node-body{\n        border-left:0.1px solid orange;\n        border-right:0.1px solid orange;\n    }\n    .contentRow{\n        border:0.1px solid orange;\n        background: #444444;\n    }\n    /*font&link style*/\n\n    a {\n        color: #ffff00;\n    }\n\n    .node-body > .js-nodeMain.node-main > .node-meta > .node-statsMeta > dl.pairs--inline.pairs > dd {\n        color: #ffffff;\n    }\n\n    .structItem-cell--main.structItem-cell > .structItem-title {\n        font-size: 18px;\n    }\n\n    .link--external {\n        color: #ffffff;\n    }\n\n    mark {\n        background-color: #ff0;\n        color: #000;\n    }\n\n    html {\n        color: #d1d1d1;\n        background-color: #222222;\n    \n    }\n\n    a:hover {\n        color: #80c8ff;\n    }\n\n    a.tabs-tab.is-active {\n        color: #48cfff !important;\n        border-color: #41bde9 !important;\n    }\n}",
+    "usercssData": {
+      "name": "Voz.vn Dark Mode",
+      "version": "20210907.08.53",
+      "namespace": "userstyles.world/user/nguyentdat27",
+      "description": "Dark mode for voz.vn forum",
+      "author": "nguyentdat27",
+      "license": "No License"
+    },
+    "author": "nguyentdat27",
+    "description": "Dark mode for voz.vn forum",
+    "name": "Voz.vn Dark Mode",
+    "updateDate": 1672975493305,
+    "_id": "f0f23c87-bb78-4ea0-8f28-ecb8a21525e5",
+    "_rev": 1672975493305,
+    "id": 1,
+    "preferScheme": "none"
+  },
+  {
+    "installDate": 1671183103202,
+    "sections": [
+      {
+        "code": ""
+      }
+    ],
+    "sourceCode": "/* ==UserStyle==\n@name           facebook.com - 16:31:23, 16/12/2022\n@namespace      github.com/openstyles/stylus\n@version        1.0.0\n@description    A new userstyle\n@author         Me\n==/UserStyle== */\n\n@-moz-document domain(\"facebook.com\") {\n   /*thong bao*/ \n    .acw{\n        background: #444444;\n    }\n    .touchable-notification{\n        background: #333333;\n    }\n    ._52jh{\n        color: green;\n    }\n    /*box comment*/\n    ._2b06{\n        background: #333333;\n    }\n    /* home, search... */\n    ._5-lw{\n        background: #333333;\n    }\n    #viewport{\n        background:#333333;\n    }\n\n    #MFirstBatch > .storyStream {\n       background:#222222; \n    }\n    ._7g4m{\n        background: #222222;\n    }\n    ._5caa._5c9u._54k8._56by{\n        background: #222222;\n    }\n    ._5c9u._54k8._56by{\n        background: #222222;\n    }\n    ._5t8z._vyy._bpa._412_._24e1._2rea{\n        background:#222222;\n    }\n    ._4qxt.touchable{\n        color: gray;\n    }\n\n    .story_body_container > ._5qc1._77kd._1o88._5909{\n       background:#333333;\n        color:#ffff00;\n    }\n    ._5qc1._77kd._1o88._5909 > ._7om2 > ._52we._5i2i._4g34 > ._5xu4 > ._5909 > ._52wc._7om2 > ._4g34 > ._3rc4._4vc-._5qc3._52jg._52jb._52jd{\n        color:#ffff00;\n    }\n    .story_body_container{\n       background:#222222; \n    }\n    ._22rc > ._4b44._2ip_{\n       background:#222222;  \n    }\n    ._4u3j._hdn{\n       background: #222222; \n\n    }\n    ._7gxn._9rhg._17gp._3qet._451a._52z5{\n        background:#444444;\n    }\n    ._52we._7om2{\n        background:#777777;\n    }\n    ._19no._7i-0{\n        background: #555555;\n    }\n    ._52we._7om2 > div._4g34{\n        background: #444444;\n        color:#ffff00;\n    }\n    ._62ta._2ftp{\n        background:#fff0;\n    }\n    ._2am8{\n       background: #222222;   \n    }\n\n    ._2b04 > ._2b06{\n        background: #444444;\n        color:#ffff00;\n    }\n    ._2b06 > div > span{\n        color:#ffff00;\n    }\n    ._5qc1._7dhf._ung._5909{\n        background: #333333;\n        color:#ffff00;\n    }\n    ._5qc1._7dhf._ung._5909 > ._7om2 > ._52we._5i2i._4g34 > ._5xu4 > ._5909 > ._52wc._7om2 > ._4g34 > ._4vc-._5qc3._52jg._52jb._52jd{\n        color:#ffff00;\n    }\n    ._55wo{\n        background: #222222; \n    }\n    .touchable._3-8z._3-98._7cui._5b6o._5909{\n        background: #333333;\n    }\n    ._7cdk._3gim._5909{\n        background: #333333;\n    }\n    .x1a8lsjc.xz9dl7a.x1swvt13.x1pi30zi.x1a02dak.x78zum5.x6s0dn4{\n        background: #222222;\n    }\n    ._42rg{\n        background: #333333;\n    }\n    .xh8yej3 > .x13a6bvl.x78zum5{\n         background: #333333;\n    }\n    .xz9dl7a.x1swvt13.x1pi30zi.x1a8lsjc.xdt5ytf.x78zum5.x1qjc9v5{\n        background: #222222;\n    }\n    ._10c_{\n         background: #222222;\n    }\n    ._77xj{\n        background:#333333;\n    }\n    ._6xqt{\n        color:#ffff00;\n    }\n\n    span {\n        color:#ffff00;\n        font-size:17px;\n    }\n    div{\n        color:#fff000;\n        font-size:17px;\n    }\n}",
+    "usercssData": {
+      "name": "facebook.com - 16:31:23, 16/12/2022",
+      "namespace": "github.com/openstyles/stylus",
+      "version": "1.0.0",
+      "description": "A new userstyle",
+      "author": "Me"
+    },
+    "author": "Me",
+    "description": "A new userstyle",
+    "name": "facebook.com - 16:31:23, 16/12/2022",
+    "updateDate": 1671358499627,
+    "_id": "24dad04a-4b20-4b3a-84fa-83a78d8d9b67",
+    "_rev": 1671720941590,
+    "id": 3
+  },
+  {
+    "enabled": false,
+    "installDate": 1671206461822,
+    "sections": [
+      {
+        "code": ""
+      }
+    ],
+    "sourceCode": "/* ==UserStyle==\n@name           instagram.com - 23:00:46, 16/12/2022\n@namespace      github.com/openstyles/stylus\n@version        1.0.0\n@description    A new userstyle\n@author         Me\n==/UserStyle== */\n\n@-moz-document domain(\"instagram.com\") {\n    /* Insert code here... */\n    a{\n        color:#ff8000;\n    }\n    span{\n        color:#ff8000;\n    }\n    .x1iyjqo2.xh8yej3 > div > .x1n2onr6 > ._a6hd.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl > .xzauu7c.x1lhsz42.x10djquj.x172qv1o.xif99yt.x1dn74xm.x1wj20lx.x12ldp4w.x11hdxyr.xs3sg5q.x9k3k5o.x1dejxi8.xubc8zo.x1ug36kh.x1sxb60h.x1v9afh1.xdoji71.x159b3zp.x1l895ks.x1ye3gou.xsag5q8.xn6708d.xz9dl7a.x12dmmrz.x7nr27j.x6pnmvc.xo237n4.xjpr12u.xr9ek0c.x4pb5v6.x1mnwbp6.xjy5m1g.x1z11no5.x3nfvp2.x9f619 > .xzzcqpx.x1swvt13.x1s85apg.xeq5yr9.x6ikm8r.xxk0z11.x9f619.x6s0dn4 > div > ._aada._aacx._aacu._aacp._aacl{\n    color:#ffff00;\n    }\n    .xg83lxy.x1h0ha7o.x1yf5rgg.xhikscq.xuxw1ft.xlyipyv.x2b8uid.x1n2onr6.x10wlt62.x6ikm8r.x1lliihq.x9f619{\n        color:#fff000;\n    }\n    ._aati._aath._aatf._aate._aatc._aatb._ab6m._ab6k > ._abcm._ab9p._ab9m._ab9h._ab99._ab94._ab8w > ._aasj._aasi > ._abcm._ab9p._ab9k._ab9i._ab97._ab94._ab8w > ._aaqx._aaqw > ._aaq-._aaqy > ._aar1._aar0 > .x78zum5 > ._aaqt > ._abcm._ab9p._ab9k._ab9f._ab97._ab94._ab8w > ._aade._aad6._aacx._aacw._aaco._aacl > ._aap8._aap7._aap6 > ._a6hd._aj1-._acaw._acat._acao._acan.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl{\n        color: #fff000;\n    }\n    ._aap8._aap7._aap6 > ._a6hd._aj1-._acaw._acat._acao._acan.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl{\n        color: #ffff00;\n    }\n    ._aati._aath._aatf._aate._aatc._aatb._ab6m._ab6k > ._abcm._ab9p._ab9m._ab9h._ab99._ab94._ab8w > ._abcm._ab9p._ab9m._ab9f._ab99._ab94._ab8w > ._ae1l._ae1i._ae1h > ._ae3w._ae2s > ._ae5t._ae5s._ae5q > ._abcm._ab9p._ab9m._ab9f._ab99._ab94._ab8w > div._abcm._abak._ab9p._ab9m._ab9f._ab99._ab94._ab8w > ._abcm._ab9o._ab9m._ab9f._ab99._ab94._ab8x > span._aade._aad7._aacx._aacu._aaco._aacl > ._aade._aad7._aacx._aacu._aaco._aacl{\n        color: #fff000;\n    }\n    ._aade._aad7._aacx._aacu._aaco._aacl > ._aade._aad7._aacx._aacu._aaco._aacl{\n        color: #fff000;\n    }\n    ._abcm._ab9o._ab9m._ab9f._ab99._ab94._ab8x > ._aap8._aap7._aap6 > ._a6hd.notranslate.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl > ._aade._aad7._aacx._aacw._aaco._aacl > ._abcm._ab9p._ab9k._ab9f._ab97._ab94._ab8y{\n        color: #f94040;\n    }\n    ._a6hd._aaqk.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl{\n        color: #f2cd2e;\n    }\n   ._ab6-{\n        color: orange;\n    } \n}",
+    "usercssData": {
+      "name": "instagram.com - 23:00:46, 16/12/2022",
+      "namespace": "github.com/openstyles/stylus",
+      "version": "1.0.0",
+      "description": "A new userstyle",
+      "author": "Me"
+    },
+    "author": "Me",
+    "description": "A new userstyle",
+    "name": "instagram.com - 23:00:46, 16/12/2022",
+    "updateDate": 1671243829002,
+    "_id": "45110946-eb6d-499e-84c9-2395bab84dc4",
+    "_rev": 1671433625382,
+    "id": 4
+  },
+  {
+    "enabled": false,
+    "installDate": 1671206461822,
+    "sections": [
+      {
+        "code": ""
+      }
+    ],
+    "sourceCode": "/* ==UserStyle==\n@name           instagram.com - 23:00:46, 16/12/2022\n@namespace      github.com/openstyles/stylus\n@version        1.0.0\n@description    A new userstyle\n@author         Me\n==/UserStyle== */\n\n@-moz-document domain(\"instagram.com\") {\n    /* Insert code here... */\n    a{\n        color:#ff8000;\n    }\n    span{\n        color:#ff8000;\n    }\n    .x1iyjqo2.xh8yej3 > div > .x1n2onr6 > ._a6hd.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl > .xzauu7c.x1lhsz42.x10djquj.x172qv1o.xif99yt.x1dn74xm.x1wj20lx.x12ldp4w.x11hdxyr.xs3sg5q.x9k3k5o.x1dejxi8.xubc8zo.x1ug36kh.x1sxb60h.x1v9afh1.xdoji71.x159b3zp.x1l895ks.x1ye3gou.xsag5q8.xn6708d.xz9dl7a.x12dmmrz.x7nr27j.x6pnmvc.xo237n4.xjpr12u.xr9ek0c.x4pb5v6.x1mnwbp6.xjy5m1g.x1z11no5.x3nfvp2.x9f619 > .xzzcqpx.x1swvt13.x1s85apg.xeq5yr9.x6ikm8r.xxk0z11.x9f619.x6s0dn4 > div > ._aada._aacx._aacu._aacp._aacl{\n    color:#ffff00;\n    }\n    .xg83lxy.x1h0ha7o.x1yf5rgg.xhikscq.xuxw1ft.xlyipyv.x2b8uid.x1n2onr6.x10wlt62.x6ikm8r.x1lliihq.x9f619{\n        color:#fff000;\n    }\n    ._aati._aath._aatf._aate._aatc._aatb._ab6m._ab6k > ._abcm._ab9p._ab9m._ab9h._ab99._ab94._ab8w > ._aasj._aasi > ._abcm._ab9p._ab9k._ab9i._ab97._ab94._ab8w > ._aaqx._aaqw > ._aaq-._aaqy > ._aar1._aar0 > .x78zum5 > ._aaqt > ._abcm._ab9p._ab9k._ab9f._ab97._ab94._ab8w > ._aade._aad6._aacx._aacw._aaco._aacl > ._aap8._aap7._aap6 > ._a6hd._aj1-._acaw._acat._acao._acan.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl{\n        color: #fff000;\n    }\n    ._aap8._aap7._aap6 > ._a6hd._aj1-._acaw._acat._acao._acan.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl{\n        color: #ffff00;\n    }\n    ._aati._aath._aatf._aate._aatc._aatb._ab6m._ab6k > ._abcm._ab9p._ab9m._ab9h._ab99._ab94._ab8w > ._abcm._ab9p._ab9m._ab9f._ab99._ab94._ab8w > ._ae1l._ae1i._ae1h > ._ae3w._ae2s > ._ae5t._ae5s._ae5q > ._abcm._ab9p._ab9m._ab9f._ab99._ab94._ab8w > div._abcm._abak._ab9p._ab9m._ab9f._ab99._ab94._ab8w > ._abcm._ab9o._ab9m._ab9f._ab99._ab94._ab8x > span._aade._aad7._aacx._aacu._aaco._aacl > ._aade._aad7._aacx._aacu._aaco._aacl{\n        color: #fff000;\n    }\n    ._aade._aad7._aacx._aacu._aaco._aacl > ._aade._aad7._aacx._aacu._aaco._aacl{\n        color: #fff000;\n    }\n    ._abcm._ab9o._ab9m._ab9f._ab99._ab94._ab8x > ._aap8._aap7._aap6 > ._a6hd.notranslate.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl > ._aade._aad7._aacx._aacw._aaco._aacl > ._abcm._ab9p._ab9k._ab9f._ab97._ab94._ab8y{\n        color: #f94040;\n    }\n    ._a6hd._aaqk.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl{\n        color: #f2cd2e;\n    }\n    ._a6hd._aj1-._acaw._acat._acao._acan.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl{\n        color:#fff000;\n    }\n    ._aath._aatf._aatd._aatc._aatb._ab6k._abj9 > ._abcm._ab9p._ab9m._ab9h._ab99._ab94._ab8w > ._abcm._ab9p._ab9m._ab9f._ab99._ab94._ab8w > ._ae1i._ae1h > ._ae2s > ._ae5q > ._abcm._ab9p._ab9m._ab9f._ab99._ab94._ab8w > div._abcm._abaj._ab9p._ab9m._ab9f._ab99._ab94._ab8w > ._abcm._ab9o._ab9m._ab9f._ab99._ab94._ab8x > ._a6hd.notranslate.x1a2a7pz.xggy1nq.x1hl2dhg.x16tdsg8.xkhd6sd.x18d9i69.x4uap5.xexx8yu.x1mh8g0r.xat24cr.x11i5rnm.xdj266r.xe8uvvx.xt0psk2.x1ypdohk.x9f619.xav7gou.xaqea5y.x1b1mbwd.x6umtig.xjbqb8w.x1i10hfl > ._aade._aad7._aacx._aacw._aaco._aacl > ._abcm._ab9p._ab9k._ab9f._ab97._ab94._ab8y{\n        color:red;\n    }\n    .xc99tnm.xuxw1ft.xlyipyv.x2b8uid.x1n2onr6.x10wlt62.x6ikm8r.x1lliihq.x9f619{\n        color:orange;\n    }\n    ._ab6-{\n        color:orange;\n    }\n}",
+    "usercssData": {
+      "name": "instagram.com - 23:00:46, 16/12/2022",
+      "namespace": "github.com/openstyles/stylus",
+      "version": "1.0.0",
+      "description": "A new userstyle",
+      "author": "Me"
+    },
+    "author": "Me",
+    "description": "A new userstyle",
+    "name": "instagram.com - 23:00:46, 16/12/2022",
+    "updateDate": 1671724840378,
+    "_id": "45110946-eb6d-499e-84c9-2395bab84dc4",
+    "_rev": 1671725415742,
+    "id": 5
+  },
+  {
+    "installDate": 1671284547592,
+    "sections": [
+      {
+        "code": ""
+      }
+    ],
+    "sourceCode": "/* ==UserStyle==\n@name           twitter.com - 12/17/2022, 8:41:22 PM\n@namespace      github.com/openstyles/stylus\n@version        1.0.0\n@description    A new userstyle\n@author         Me\n==/UserStyle== */\n\n@-moz-document domain(\"twitter.com\") {\n    /* Insert code here... */\n    \n    /****text****/\n    a{\n        color: green;\n    }\n    p{\n        color:green;\n    }\n    .css-901oao{\n        color: green;\n    }\n    .r-1nao33i{\n        color: orange;\n    }\n       \n}",
+    "usercssData": {
+      "name": "twitter.com - 12/17/2022, 8:41:22 PM",
+      "namespace": "github.com/openstyles/stylus",
+      "version": "1.0.0",
+      "description": "A new userstyle",
+      "author": "Me"
+    },
+    "author": "Me",
+    "description": "A new userstyle",
+    "name": "twitter.com - 12/17/2022, 8:41:22 PM",
+    "updateDate": 1671285419528,
+    "_id": "823ad404-eb05-434e-8cf7-4ff3801bab2c",
+    "_rev": 1671720941593,
+    "id": 6
+  },
+  {
+    "enabled": false,
+    "installDate": 1671383047323,
+    "sections": [
+      {
+        "code": ""
+      }
+    ],
+    "sourceCode": "/* ==UserStyle==\n@name           nextdns.io - 12/19/2022, 12:02:49 AM\n@namespace      github.com/openstyles/stylus\n@version        1.0.0\n@description    A new userstyle\n@author         Me\n==/UserStyle== */\n\n@-moz-document domain(\"nextdns.io\") {\n    /* Insert code here... */\n    html{\n        background: #222222;\n        color: yellow;\n    }\n    a{\n        color: yellow;\n    }\n    div{\n        color: yellow;\n    }\n}",
+    "usercssData": {
+      "name": "nextdns.io - 12/19/2022, 12:02:49 AM",
+      "namespace": "github.com/openstyles/stylus",
+      "version": "1.0.0",
+      "description": "A new userstyle",
+      "author": "Me"
+    },
+    "author": "Me",
+    "description": "A new userstyle",
+    "name": "nextdns.io - 12/19/2022, 12:02:49 AM",
+    "updateDate": 1671384339553,
+    "_id": "3c67543d-c0ba-4d50-83a7-7393156f3b57",
+    "_rev": 1671959789472,
+    "id": 7
+  },
+  {
+    "installDate": 1671383228779,
+    "sections": [
+      {
+        "code": ""
+      }
+    ],
+    "sourceCode": "/* ==UserStyle==\n@name           vnexpress.net 12/19/2022, 12:06:31 AM\n@namespace      github.com/openstyles/stylus\n@version        1.0.0\n@description    A new userstyle\n@author         Me\n==/UserStyle== */\n\n@-moz-document domain(\"vnexpress.net\") {\n  \n    /* Insert code here... */\n    \n    p{\n        font-style: italic;\n        color: gray;\n    }\n    a{\n        color: grey;\n        font-style: italic;\n    }\n    .mb15.short_intro{\n        color: yellow;\n    }\n    .mb15.title_news_detail{\n        color: grey;\n    }\n    \n}",
+    "usercssData": {
+      "name": "vnexpress.net 12/19/2022, 12:06:31 AM",
+      "namespace": "github.com/openstyles/stylus",
+      "version": "1.0.0",
+      "description": "A new userstyle",
+      "author": "Me"
+    },
+    "author": "Me",
+    "description": "A new userstyle",
+    "name": "vnexpress.net 12/19/2022, 12:06:31 AM",
+    "updateDate": 1671704386179,
+    "_id": "d707d994-2f61-493b-9144-9abd842a762d",
+    "_rev": 1671720941594,
+    "id": 8,
+    "customName": "vnexpress.net darkmode"
+  }
+]
