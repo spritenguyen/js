@@ -3,7 +3,7 @@
 // @name:zh-CN   m3u8视频侦测下载器【自动嗅探】
 // @name:zh-TW   m3u8視頻偵測下載器【自動嗅探】
 // @name:en      MPV-M3U8 Video Detector and Downloader
-// @version      1.4.1.1
+// @version      1.4.1
 // @description  自动检测页面m3u8视频并进行完整下载。检测到m3u8链接后会自动出现在页面右上角位置，点击下载即可跳转到m3u8下载器。
 // @description:zh-CN  自动检测页面m3u8视频并进行完整下载。检测到m3u8链接后会自动出现在页面右上角位置，点击下载即可跳转到m3u8下载器。
 // @description:zh-TW  自動檢測頁面m3u8視頻並進行完整下載。檢測到m3u8鏈接後會自動出現在頁面右上角位置，點擊下載即可跳轉到m3u8下載器。
