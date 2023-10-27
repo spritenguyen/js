@@ -5,7 +5,7 @@
 // @namespace   Lazyloadfier Userscript - Violentmonkey Scripts
 // @match       *://*/*
 // @grant       none
-// @version     1.0
+// @version     1.0.1
 // @run-at      document-start
 // @author      -
 // @description 9/8/2023, 1:42:06 AM
