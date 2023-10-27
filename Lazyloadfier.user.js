@@ -89,11 +89,12 @@ function getObservedNodes(mutationsList) {
     return observedNodes;
 }
 
+
+
 function matchObservedNode(node) {
-    return TAG_NAMES_WITH_SRC_ATTRIBUTE.has(node.tagName) &&
-        nodeIsHidden(node) &&
-        node[LOADING_ATTRIBUTE_NAME] != LAZY_LOADING_ATTRIBUTE_VALUE;
+    return TAG_NAMES_WITH_SRC_ATTRIBUTE.has(node.tagName);
 }
+
 
 function nodeIsHidden(node) {
     const boundingClientRect = node.getBoundingClientRect();
