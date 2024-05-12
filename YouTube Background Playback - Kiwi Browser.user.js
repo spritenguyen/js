@@ -8,8 +8,6 @@
 // @run-at      document-end
 // @author      -
 // @description Enable YouTube background playback in Kiwi
-// @downloadURL https://update.greasyfork.org/scripts/437123/YouTube%20Background%20Playback%20-%20Kiwi%20Browser.user.js
-// @updateURL https://update.greasyfork.org/scripts/437123/YouTube%20Background%20Playback%20-%20Kiwi%20Browser.meta.js
 // ==/UserScript==
 
 'use strict';				   
