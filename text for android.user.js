@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function() {
 
-var css = ["*,html,p,.bbWrapper,.js-expandContent.bbCodeBlock-expandContent{font-size: 18px !important; color:;} a{color:;} .link{color:red !important;} /*voz.vn*/.bbCodeBlock-expandContent,.fauxBlockLink-blockLink{font-size:17px;} .node-extra-title{font-size:18px !important;} .js-nodeMain.node-main > .node-title,.structItem-cell--main.structItem-cell > .structItem-title{font-size:18px;} .userTitle,.message-inner > .message-cell--main.message-cell > .js-quickEditTarget.message-main > .js-messageContent.message-content > .message-signature > .bbWrapper{font-size:13px} /*just vnexpress.net*/.content-comment > .full_content,.title-detail,/*just dantri.com.vn*/.e-magazine__title,.detail.title-page{color:; font-size:22px;}"].join("\n");
+var css = ["*,html,a,p{font-size: 18px !important; color:#696969;}"].join("\n");
 
 if (typeof GM_addStyle != 'undefined') {
  GM_addStyle(css);
