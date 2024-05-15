@@ -14,7 +14,7 @@
 // ==/UserScript==
 (function() {
 
-var css = ["*,a,p,h1,h2{font-size: 18px !important; color:#393939;}"].join("\n");
+var css = ["*{font-size: 18px !important;} a,p{color:#393939;}"].join("\n");
 
 if (typeof GM_addStyle != 'undefined') {
  GM_addStyle(css);
