@@ -5,7 +5,7 @@
 // @exclude     *://listenaminute.com/*
 // @exclude     *://docsach24.co/*
 // @exclude     *://truyenful.vn/*
-// @version        0.5
+// @version        0.6
 // @description   26/12/2022
 // @author         zNDB
 // @run-at          document-start
