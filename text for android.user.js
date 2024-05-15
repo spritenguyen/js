@@ -5,6 +5,7 @@
 // @exclude     *://listenaminute.com/*
 // @exclude     *://docsach24.co/*
 // @exclude     *://truyenful.vn/*
+// @exclude     *://vnexpress.net/*
 // @version        0.6
 // @description   15/05/2024
 // @author         zNDB
