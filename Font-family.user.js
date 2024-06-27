@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          Font family
 // @namespace SpriteNguyen
-// @match      *://voz.vn/*
+// @match      *://*/*
 // @exclude     *://biphims.*/*
 // @version        0.2.1.2
 // @description 05/01/2023
