@@ -3,7 +3,7 @@
 // @namespace SpriteNguyen
 // @match      *://*/*
 // @exclude     *://biphims.*/*
-// @version        0.2.1.2
+// @version        0.2.1.3
 // @description 05/01/2023
 // @author         zNDB
 // @run-at          document-start
