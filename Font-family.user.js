@@ -3,7 +3,7 @@
 // @namespace SpriteNguyen
 // @match      *://*/*
 // @exclude     *://biphims.*/*
-// @version        0.3.2
+// @version        0.3.3
 // @description 05/01/2023
 // @author         zNDB
 // @run-at          document-start
@@ -13,7 +13,7 @@
 
 //var css = ["@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans&family=Quicksand:wght@500&display=swap'); a,p,.bbWrapper{font-family: 'Quicksand', sans-serif !important;}"].join("\n");
   //https://fonts.google.com/specimen/Poppins link font chu
-var css = ["@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap'); a,p,h1,h2,h3,html{font-family: 'Be Vietnam Pro', sans-serif !important; font-size: 16px !important;}"].join("\n");
+var css = ["@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap'); a,p,h1,h2,h3,html{font-family: 'Be Vietnam Pro', sans-serif !important; font-size: 18px !important;}"].join("\n");
 
 if (typeof GM_addStyle != 'undefined') {
  GM_addStyle(css);
