@@ -32,7 +32,7 @@ const FRAME_RATE_REGEX = /framerate=(\d+)/;
 
         const frameRateMatch = FRAME_RATE_REGEX.exec(type);
         //if (BLOCK_HIGH_FPS && frameRateMatch && frameRateMatch[1] > 30) {
-        if (frameRateMatch && frameRateMatch[1] > 30) {
+        if (frameRateMatch && frameRateMatch[1] = 60) {
             return false;
         }
 
