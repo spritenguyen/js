@@ -2,7 +2,7 @@
 // @name YouTube H.264 + FPS
 // @name:ru YouTube H.264 + FPS
 // @namespace https://www.youtube.com
-// @version     1.1
+// @version     1.2
 // @description Clone of h264ify with optional limit up to 30 FPS.
 // @description:ru Клон h264ify с опциональным ограничением до 30 FPS.
 // @match *://*.youtube.com/*
@@ -31,7 +31,8 @@ const FRAME_RATE_REGEX = /framerate=(\d+)/;
         if (DISALLOWED_TYPES_REGEX.test(type)) return false;
 
         const frameRateMatch = FRAME_RATE_REGEX.exec(type);
-        if (BLOCK_HIGH_FPS && frameRateMatch && frameRateMatch[1] > 30) {
+        //if (BLOCK_HIGH_FPS && frameRateMatch && frameRateMatch[1] > 30) {
+        if (frameRateMatch && frameRateMatch[1] > 30) {
             return false;
         }
 
