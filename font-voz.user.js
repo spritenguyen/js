@@ -8,7 +8,7 @@
 // @match                http*://voz.vn/*
 // ==/UserScript==
 (function(){
-var css = [".message-body,html,htmlbutton,input,optgroup,select,textarea,.fr-box.fr-basic .fr-element{font-size:20px !important;}"].join("\n");
+var css = [".message-body,html,htmlbutton,input,optgroup,select,textarea,.fr-box.fr-basic .fr-element{font-size:18px !important;}"].join("\n");
 if (typeof GM_addStyle != 'undefined') {
  GM_addStyle(css);
  } else if (typeof PRO_addStyle != 'undefined') {
