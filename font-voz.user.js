@@ -1,14 +1,30 @@
 // ==UserScript==
-// @name                 Voz BeVietnam Font
-// @namespace            Voz BeVietnam Font
-// @version              1.1
-// @description          Rollback old Voz font
-// @author               Fioren
+// @name                 Voz
+// @namespace            Voz
+// @version              1.2
+// @description          
+// @author               me
 // @run-at               document-start
-// @include              http*://voz.vn/*
+// @match                http*://voz.vn/*
 // @downloadURL https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Voz20BeVietnam20Font.user.js
 // @updateURL https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Voz20BeVietnam20Font.meta.js
 // ==/UserScript==
-function(){
-var css = [.message-body,html,htmlbutton,input,optgroup,select,textarea,.fr-box.fr-basic .fr-element{","font-color:'red' !important","}"].join("\n");
-if("undefined"!=typeof GM_addStyle)GM_addStyle(e);else if("undefined"!=typeof PRO_addStyle)PRO_addStyle(e);else if("undefined"!=typeof addStyle)addStyle(e);else{var t=document.createElement("style");t.type="text/css",t.appendChild(document.createTextNode(e));var n=document.getElementsByTagName("head");n.length>0?n[0].appendChild(t):document.documentElement.appendChild(t)}}();
+(function(){
+var css = [".message-body,html,htmlbutton,input,optgroup,select,textarea,.fr-box.fr-basic .fr-element{font-size:18px !important;}"].join("\n");
+if (typeof GM_addStyle != 'undefined') {
+ GM_addStyle(css);
+ } else if (typeof PRO_addStyle != 'undefined') {
+ PRO_addStyle(css);
+ } else if (typeof addStyle != 'undefined') {
+ addStyle(css);
+ } else {
+ var node = document.createElement('style');
+ node.type = 'text/css';
+ node.appendChild(document.createTextNode(css));
+ var heads = document.getElementsByTagName('head');
+ if (heads.length > 0) { heads[0].appendChild(node);
+ } else {
+ // no head yet, stick it whereever
+ document.documentElement.appendChild(node);
+ }
+}})();
