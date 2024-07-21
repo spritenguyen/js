@@ -6,8 +6,6 @@
 // @author               me
 // @run-at               document-start
 // @match                http*://voz.vn/*
-// @downloadURL https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Voz20BeVietnam20Font.user.js
-// @updateURL https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Voz20BeVietnam20Font.meta.js
 // ==/UserScript==
 (function(){
 var css = [".message-body,html,htmlbutton,input,optgroup,select,textarea,.fr-box.fr-basic .fr-element{font-size:18px !important;}"].join("\n");
