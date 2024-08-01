@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name                 Voz
 // @namespace            Voz
-// @version              1.3
+// @version              1.3.1
 // @description          
 // @author               me
 // @run-at               document-start
-// @match                http*://voz.vn/*
+// @match                *://voz.vn/*
 // ==/UserScript==
 (function(){
 var css = [".message-body,html,htmlbutton,input,optgroup,select,textarea,.fr-box.fr-basic .fr-element{font-size:18px !important;}"].join("\n");
