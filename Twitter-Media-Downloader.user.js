@@ -10,8 +10,8 @@
 // @version     1.27
 // @author      AMANE
 // @namespace   none
-// @match       https://twitter.com/*
-// @match       https://mobile.twitter.com/*
+// @match       https://x.com/*
+// @match       https://mobile.x.com/*
 // @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_getValue
