@@ -32,6 +32,7 @@ SOFTWARE.
 // @license             MIT License
 // @author              CY Fung
 // @match               https://www.youtube.com/*
+// @match               https://m.youtube.com/*
 // @match               https://www.youtube.com/embed/*
 // @match               https://www.youtube-nocookie.com/embed/*
 // @match               https://www.youtube.com/live_chat*
