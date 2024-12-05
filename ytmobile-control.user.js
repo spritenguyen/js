@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Mobile Controls Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Add controls to YouTube mobile and maintain aspect ratio.
 // @author       Your Name
 // @match        *://m.youtube.com/*
@@ -11,17 +11,13 @@
 (function() {
     'use strict';
 
-    // Add video controls
-    const addControls = () => {
+    const addControlsAndStyles = () => {
         const videos = document.querySelectorAll('video');
         videos.forEach(video => {
             video.setAttribute('controls', 'true');
             video.style.objectFit = 'contain';
         });
-    };
 
-    // Add styles for various elements
-    const addStyles = () => {
         const style = document.createElement('style');
         style.textContent = `
             #player-control-overlay {
@@ -51,18 +47,19 @@
             #player-control-overlay.fadein .YtPlayerStoryboardHost {
                 bottom: -80px !important;
             }
+            .ytp-fullscreen-button,
+            .ytp-progress-bar-container {
+                display: block !important;
+            }
         `;
         document.head.appendChild(style);
     };
 
-    // Apply the controls and styles
-    const applyEnhancements = () => {
-        addControls();
-        addStyles();
-    };
+    const observer = new MutationObserver(() => {
+        addControlsAndStyles();
+    });
 
-    // Run the script when the page loads or when navigating within the site
-    window.addEventListener('load', applyEnhancements);
-    document.addEventListener('yt-navigate-finish', applyEnhancements);
+    observer.observe(document.body, { childList: true, subtree: true });
 
+    window.addEventListener('load', addControlsAndStyles);
 })();
