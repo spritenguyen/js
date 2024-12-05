@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         YouTube Mobile Controls Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      0.3
-// @description  Add controls to YouTube mobile and maintain aspect ratio, adjust play/pause button.
+// @version      0.3.1
+// @description  Add controls to YouTube mobile and maintain aspect ratio.
 // @author       Your Name
 // @match        *://m.youtube.com/*
 // @grant        none
@@ -21,7 +21,7 @@
         const style = document.createElement('style');
         style.textContent = `
             #player-control-overlay {
-                bottom: 90% !important;
+                bottom: 0% !important;
             }
             .player-controls-background-container,
             .player-middle-controls,
@@ -50,15 +50,6 @@
             .ytp-fullscreen-button,
             .ytp-progress-bar-container {
                 display: block !important;
-            }
-            /* Ẩn hoặc căn chỉnh hợp lý nút điều khiển play/pause cũ */
-            .ytp-play-button {
-                display: none !important;  /* Ẩn nút điều khiển play/pause cũ */
-            }
-            /* Để căn chỉnh hợp lý, bạn có thể thay đổi thuộc tính sau */
-            .ytp-play-button {
-                top: 50% !important;  /* Đặt nút ở giữa video */
-                transform: translateY(-50%) !important;  /* Căn chỉnh theo chiều dọc */
             }
         `;
         document.head.appendChild(style);
