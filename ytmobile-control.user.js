@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Mobile Controls Enhancer
 // @namespace    http://tampermonkey.net/
-// @version      0.3.1
+// @version      0.3.2
 // @description  Add controls to YouTube mobile and maintain aspect ratio.
 // @author       Your Name
 // @match        *://m.youtube.com/*
@@ -21,7 +21,8 @@
         const style = document.createElement('style');
         style.textContent = `
             #player-control-overlay {
-                bottom: 0% !important;
+                /*bottom: 0% !important;*/
+                display: none !important;
             }
             .player-controls-background-container,
             .player-middle-controls,
