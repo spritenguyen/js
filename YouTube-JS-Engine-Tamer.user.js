@@ -3,7 +3,7 @@
 // @namespace   UserScripts
 // @match       https://www.youtube.com/*
 // @match       https://m.youtube.com/*
-// @version     0.16.16
+// @version     0.16.16.1
 // @license     MIT
 // @author      CY Fung
 // @icon        https://raw.githubusercontent.com/cyfung1031/userscript-supports/main/icons/yt-engine.png
