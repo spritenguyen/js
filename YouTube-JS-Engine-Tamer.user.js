@@ -2,6 +2,7 @@
 // @name        YouTube JS Engine Tamer
 // @namespace   UserScripts
 // @match       https://www.youtube.com/*
+// @match       https://m.youtube.com/*
 // @version     0.16.16
 // @license     MIT
 // @author      CY Fung
