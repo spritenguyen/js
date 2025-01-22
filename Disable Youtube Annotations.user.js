@@ -2,6 +2,7 @@
 // @name     Disable Youtube Annotations
 // @version  1
 // @match    https://www.youtube.com/*
+// @match    https://m.youtube.com/*
 // @namespace https://greasyfork.org/users/396494
 // @downloadURL
 // @updateURL 
