@@ -1,8 +1,7 @@
 // ==UserScript==
-// @name YouTube H.264 + FPS
-// @name:ru YouTube H.264 + FPS
+// @name YouTube H.264
 // @namespace https://www.youtube.com
-// @version     1.3.1
+// @version     1.3.1.1
 // @description Clone of h264ify with optional limit up to 30 FPS.
 // @description:ru Клон h264ify с опциональным ограничением до 30 FPS.
 // @match *://*.youtube.com/*
