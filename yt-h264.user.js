@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube H.264
 // @namespace    https://www.youtube.com
-// @version      1.3.4
+// @version      1.3.1.4
 // @description  Clone of h264ify with optional limit up to 30 FPS.
 // @description:ru Клон h264ify с опциональным ограничением до 30 FPS.
 // @match        *://*.youtube.com/*
@@ -15,7 +15,7 @@
 (function() {
     'use strict';
 
-    const DISALLOWED_CODECS = ['vp9', 'av01'];
+    const DISALLOWED_CODECS = ['vp8', 'vp9', 'av01', 'webm'];
 
     const originalCanPlayType = HTMLVideoElement.prototype.canPlayType;
 
