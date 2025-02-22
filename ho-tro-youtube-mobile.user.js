@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         YouTube Prevent Pause on Click
+// @name         YouTube Custom Click Prevention
 // @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  Prevent any clicks from pausing YouTube video
+// @version      1.2
+// @description  Prevent pausing YouTube video on any click
 // @author       Your Name
 // @match        *://*.youtube.com/*
 // @grant        none
@@ -11,14 +11,14 @@
 (function() {
     'use strict';
 
-    function preventPause(event) {
-        event.stopPropagation();
+    // Function to disable click event
+    function disableClick(event) {
+        if (event.target.tagName.toLowerCase() === 'video') {
+            event.stopPropagation();
+            event.preventDefault();
+        }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const video = document.querySelector('video');
-        if (video) {
-            video.addEventListener('click', preventPause, true);
-        }
-    });
+    // Attach the disableClick function to the click event of the document
+    document.addEventListener('click', disableClick, true);
 })();
