@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Background Video Playback for YouTube
+// @name         Background Audio Playback for YouTube
 // @namespace    https://yournamespacehere.com
-// @version      1.0
-// @description  Enable background video playback on YouTube for Edge Android
+// @version      1.1
+// @description  Enable background audio playback on YouTube for Edge Android
 // @author       YourName
 // @match        *://*.youtube.com/*
 // @grant        none
@@ -13,25 +13,29 @@
 
     let videoElement = null;
 
-    function enableBackgroundPlayback() {
+    function enableBackgroundAudio() {
         if (videoElement) {
+            // Pause and play to ensure video resumes correctly
             videoElement.pause();
-            videoElement.play();
+            setTimeout(() => {
+                videoElement.play().catch(() => {});
+            }, 100);
         }
     }
 
     function onVideoPlay(event) {
         if (event.target.tagName === 'VIDEO') {
             videoElement = event.target;
-            enableBackgroundPlayback();
+            enableBackgroundAudio();
+        }
+    }
+
+    function onVisibilityChange() {
+        if (document.hidden && videoElement) {
+            enableBackgroundAudio();
         }
     }
 
     document.addEventListener('play', onVideoPlay, true);
-
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden && videoElement) {
-            enableBackgroundPlayback();
-        }
-    });
+    document.addEventListener('visibilitychange', onVisibilityChange);
 })();
