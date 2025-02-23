@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Picture-in-Picture cho YouTube
 // @namespace    https://yournamespacehere.com
-// @version      1.4
+// @version      1.0
 // @description  Kích hoạt chế độ Picture-in-Picture cho YouTube trên Edge Android
 // @author       YourName
 // @match        *://*.youtube.com/*
@@ -26,6 +26,9 @@
     }
 
     function startPipTimeout(video) {
+        if (pipTimeout) {
+            clearTimeout(pipTimeout);
+        }
         pipTimeout = setTimeout(() => {
             if (!checkFullscreen()) {
                 enterPictureInPicture(video);
@@ -36,7 +39,6 @@
     function onVideoPlay(event) {
         if (event.target.tagName === 'VIDEO') {
             const video = event.target;
-            startPipTimeout(video);
 
             video.addEventListener('enterpictureinpicture', () => {
                 console.log('Đã vào chế độ Picture-in-Picture.');
@@ -45,19 +47,13 @@
                 console.log('Đã thoát chế độ Picture-in-Picture.');
             });
 
-            video.addEventListener('pause', () => {
-                clearTimeout(pipTimeout);
-            });
-
-            video.addEventListener('play', () => {
-                startPipTimeout(video);
-            });
+            startPipTimeout(video);
         }
     }
+
+    document.addEventListener('play', onVideoPlay, true);
 
     document.addEventListener('fullscreenchange', () => {
         clearTimeout(pipTimeout);
     }, true);
-
-    document.addEventListener('play', onVideoPlay, true);
 })();
