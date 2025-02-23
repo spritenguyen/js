@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Picture-in-Picture cho YouTube
 // @namespace    https://yournamespacehere.com
-// @version      1.3
+// @version      1.4
 // @description  Kích hoạt chế độ Picture-in-Picture cho YouTube trên Edge Android
 // @author       YourName
 // @match        *://*.youtube.com/*
@@ -25,22 +25,19 @@
         return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
     }
 
-    function onFullscreenChange() {
-        if (!checkFullscreen()) {
-            const video = document.querySelector('video');
-            if (video) {
-                pipTimeout = setTimeout(() => {
-                    enterPictureInPicture(video);
-                }, 6000); // Delay to enter Picture-in-Picture after 6 seconds of exiting fullscreen
+    function startPipTimeout(video) {
+        pipTimeout = setTimeout(() => {
+            if (!checkFullscreen()) {
+                enterPictureInPicture(video);
             }
-        } else if (pipTimeout) {
-            clearTimeout(pipTimeout); // Clear the timeout if entering fullscreen
-        }
+        }, 6000); // Delay to enter Picture-in-Picture after 6 seconds
     }
 
     function onVideoPlay(event) {
         if (event.target.tagName === 'VIDEO') {
             const video = event.target;
+            startPipTimeout(video);
+
             video.addEventListener('enterpictureinpicture', () => {
                 console.log('Đã vào chế độ Picture-in-Picture.');
             });
@@ -48,20 +45,19 @@
                 console.log('Đã thoát chế độ Picture-in-Picture.');
             });
 
-            // Set up fullscreen change event listener
-            document.addEventListener('fullscreenchange', onFullscreenChange, true);
-            document.addEventListener('webkitfullscreenchange', onFullscreenChange, true);
-            document.addEventListener('mozfullscreenchange', onFullscreenChange, true);
-            document.addEventListener('MSFullscreenChange', onFullscreenChange, true);
+            video.addEventListener('pause', () => {
+                clearTimeout(pipTimeout);
+            });
 
-            // Set initial timeout if not in fullscreen
-            if (!checkFullscreen()) {
-                pipTimeout = setTimeout(() => {
-                    enterPictureInPicture(video);
-                }, 6000); // Delay to enter Picture-in-Picture after 6 seconds
-            }
+            video.addEventListener('play', () => {
+                startPipTimeout(video);
+            });
         }
     }
+
+    document.addEventListener('fullscreenchange', () => {
+        clearTimeout(pipTimeout);
+    }, true);
 
     document.addEventListener('play', onVideoPlay, true);
 })();
