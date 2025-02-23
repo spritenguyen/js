@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Thêm Nút P-i-P vào Video
 // @namespace    http://tampermonkey.net/
-// @version      0.6
-// @description  Thêm nút Picture-in-Picture vào video đang phát và khắc phục lỗi toàn màn hình YouTube
+// @version      0.7
+// @description  Thêm nút Picture-in-Picture vào video đang phát
 // @author       Bạn
 // @match        *://*/*
+// @exclude      *://*.youtube.com/*
 // @grant        none
 // ==/UserScript==
 
@@ -52,19 +53,6 @@
         });
     }
 
-    // Khắc phục lỗi toàn màn hình trên YouTube
-    function fixYouTubeFullscreen() {
-        const style = document.createElement('style');
-        style.textContent = `
-            video:-webkit-full-screen {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: cover;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
     // Tìm và thêm nút P-i-P vào video
     function addPiPButtonToVideos() {
         const videos = document.querySelectorAll('video');
@@ -79,7 +67,4 @@
 
     // Thêm nút P-i-P vào các video đã có sẵn
     addPiPButtonToVideos();
-
-    // Khắc phục lỗi toàn màn hình trên YouTube
-    fixYouTubeFullscreen();
 })();
