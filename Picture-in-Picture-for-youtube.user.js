@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Picture-in-Picture cho YouTube
 // @namespace    https://yournamespacehere.com
-// @version      1.2
+// @version      1.0
 // @description  Kích hoạt chế độ Picture-in-Picture cho YouTube trên Edge Android
 // @author       YourName
 // @match        *://*.youtube.com/*
@@ -10,6 +10,8 @@
 
 (function() {
     'use strict';
+
+    let pipTimeout;
 
     function enterPictureInPicture(video) {
         if (document.pictureInPictureEnabled && !document.pictureInPictureElement) {
@@ -23,6 +25,19 @@
         return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
     }
 
+    function onFullscreenChange() {
+        if (!checkFullscreen()) {
+            const video = document.querySelector('video');
+            if (video) {
+                pipTimeout = setTimeout(() => {
+                    enterPictureInPicture(video);
+                }, 6000); // Delay to enter Picture-in-Picture after 6 seconds of exiting fullscreen
+            }
+        } else if (pipTimeout) {
+            clearTimeout(pipTimeout); // Clear the timeout if entering fullscreen
+        }
+    }
+
     function onVideoPlay(event) {
         if (event.target.tagName === 'VIDEO') {
             const video = event.target;
@@ -33,11 +48,18 @@
                 console.log('Đã thoát chế độ Picture-in-Picture.');
             });
 
-            setTimeout(() => {
-                if (!checkFullscreen()) {
+            // Set up fullscreen change event listener
+            document.addEventListener('fullscreenchange', onFullscreenChange, true);
+            document.addEventListener('webkitfullscreenchange', onFullscreenChange, true);
+            document.addEventListener('mozfullscreenchange', onFullscreenChange, true);
+            document.addEventListener('MSFullscreenChange', onFullscreenChange, true);
+
+            // Set initial timeout if not in fullscreen
+            if (!checkFullscreen()) {
+                pipTimeout = setTimeout(() => {
                     enterPictureInPicture(video);
-                }
-            }, 6000); // Delay to allow the video to start playing (6 giây)
+                }, 6000); // Delay to enter Picture-in-Picture after 6 seconds
+            }
         }
     }
 
