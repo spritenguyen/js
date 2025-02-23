@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Keep Screen On for YouTube
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Giữ màn hình luôn sáng khi xem video trên YouTube
 // @author       Your Name
 // @match        https://www.youtube.com/*
@@ -15,7 +15,9 @@
 
     const requestWakeLock = async () => {
         try {
-            wakeLock = await navigator.wakeLock.request('screen');
+            if (!wakeLock) {
+                wakeLock = await navigator.wakeLock.request('screen');
+            }
         } catch (err) {
             console.error(`${err.name}, ${err.message}`);
         }
@@ -33,9 +35,8 @@
     };
 
     const manageWakeLock = () => {
-        if (document.fullscreenElement) {
-            requestWakeLock();
-        } else if (!document.querySelector('video').paused) {
+        const video = document.querySelector('video');
+        if (video && !video.paused) {
             requestWakeLock();
         } else {
             releaseWakeLock();
@@ -43,7 +44,7 @@
     };
 
     const keepScreenOn = () => {
-        let video = document.querySelector('video');
+        const video = document.querySelector('video');
         if (video) {
             video.addEventListener('play', requestWakeLock);
             video.addEventListener('pause', releaseWakeLock);
@@ -55,10 +56,8 @@
 
     document.addEventListener('fullscreenchange', manageWakeLock);
 
-    let observer = new MutationObserver(() => {
-        keepScreenOn();
-    });
-
+    const observer = new MutationObserver(keepScreenOn);
     observer.observe(document.body, { childList: true, subtree: true });
 
+    setInterval(manageWakeLock, 60000);
 })();
