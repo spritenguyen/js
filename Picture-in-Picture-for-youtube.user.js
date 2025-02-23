@@ -1,91 +1,52 @@
 // ==UserScript==
-// @name        Auto PiP for Videos
-// @namespace   http://tampermonkey.net/
-// @version     0.1
-// @description Automatically switches to PiP mode under certain conditions
-// @author      Your Name
-// @match       *://*/*
-// @grant       none
+// @name         Enhanced Picture-in-Picture for YouTube
+// @namespace    https://yournamespacehere.com
+// @version      1.1
+// @description  Enable Picture-in-Picture mode for YouTube on Edge Android with optimizations
+// @author       YourName
+// @match        *://*.youtube.com/*
+// @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    let pipTimeout;
-    const PIP_DELAY = 5000; // Thời gian delay để kích hoạt PiP (đơn vị: ms)
-    
-    // Helper function to start PiP mode
-    function requestPiP(video) {
-        if (document.pictureInPictureEnabled && !document.pictureInPictureElement) {
-            video.requestPictureInPicture().catch(error => {
-                console.error('Failed to enable PiP mode:', error);
+    function enterPictureInPicture(video) {
+        if (document.pictureInPictureEnabled && !document.pictureInPictureElement && !document.fullscreenElement) {
+            video.requestPictureInPicture().catch(err => {
+                console.error(`Failed to enter Picture-in-Picture mode: ${err}`);
             });
         }
     }
 
-    // Bắt đầu đếm thời gian để kích hoạt PiP
-    function startPiPTimer(video) {
-        clearPiPTimer();
-        pipTimeout = setTimeout(() => {
-            requestPiP(video);
-        }, PIP_DELAY);
+    function onVideoPlay(event) {
+        if (event.target.tagName === 'VIDEO') {
+            const video = event.target;
+            video.addEventListener('enterpictureinpicture', () => {
+                console.log('Entered Picture-in-Picture mode.');
+            });
+            video.addEventListener('leavepictureinpicture', () => {
+                console.log('Exited Picture-in-Picture mode.');
+            });
+
+            setTimeout(() => {
+                enterPictureInPicture(video);
+            }, 3000); // Delay to allow the video to start playing
+        }
     }
 
-    // Xóa bộ đếm thời gian
-    function clearPiPTimer() {
-        clearTimeout(pipTimeout);
-    }
+    document.addEventListener('play', onVideoPlay, true);
 
-    // Listen to video play/pause events
-    function attachVideoEvents(video) {
-        video.addEventListener('play', () => {
-            startPiPTimer(video);
-        });
-        
-        video.addEventListener('pause', () => {
-            clearPiPTimer();
-        });
-    }
-
-    // Listen to fullscreen change events
-    function attachFullscreenEvents() {
-        document.addEventListener('fullscreenchange', () => {
-            const video = document.querySelector('video');
-            if (document.fullscreenElement) {
-                // Đang vào chế độ toàn màn hình
-                clearPiPTimer();
+    document.addEventListener('fullscreenchange', () => {
+        const video = document.querySelector('video');
+        if (video) {
+            if (!document.fullscreenElement) {
+                setTimeout(() => {
+                    enterPictureInPicture(video);
+                }, 3000); // Delay to allow fullscreen exit
             } else {
-                // Thoát khỏi chế độ toàn màn hình
-                startPiPTimer(video);
-            }
-        });
-    }
-
-    // Attach events to all video elements
-    function init() {
-        const videos = document.querySelectorAll('video');
-        videos.forEach(video => {
-            attachVideoEvents(video);
-        });
-        attachFullscreenEvents();
-    }
-
-    // Run the script once the DOM is fully loaded
-    window.addEventListener('load', () => {
-        init();
-    });
-
-    // Monitor for dynamically added video elements
-    const observer = new MutationObserver(mutations => {
-        for (const mutation of mutations) {
-            if (mutation.addedNodes.length) {
-                for (const node of mutation.addedNodes) {
-                    if (node.tagName === 'VIDEO') {
-                        attachVideoEvents(node);
-                    }
-                }
+                console.log('Video is in fullscreen mode, PiP not activated.');
             }
         }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
 })();
