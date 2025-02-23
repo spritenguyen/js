@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Picture-in-Picture cho YouTube
 // @namespace    https://yournamespacehere.com
-// @version      1.0
+// @version      1.1
 // @description  Kích hoạt chế độ Picture-in-Picture cho YouTube trên Edge Android
 // @author       YourName
 // @match        *://*.youtube.com/*
@@ -40,7 +40,7 @@
 
             setTimeout(() => {
                 enterPictureInPicture(video);
-            }, 3000); // Delay to allow the video to start playing
+            }, 6000); // Delay to allow the video to start playing
         }
     }
 
