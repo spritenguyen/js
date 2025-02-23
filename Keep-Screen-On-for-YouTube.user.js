@@ -1,47 +1,42 @@
 // ==UserScript==
 // @name         Keep Screen On for YouTube
-// @namespace    http://tampermonkey.net/
-// @version      0.2
-// @description  Giữ màn hình luôn sáng khi xem video trên YouTube
-// @author       Your Name
-// @match        https://www.youtube.com/*
+// @namespace    https://yournamespacehere.com
+// @version      1.0
+// @description  Keep screen on while playing YouTube videos, turn off when video stops or ends
+// @author       YourName
+// @match        *://*.youtube.com/*
 // @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
 
+    // Function to keep the screen on
     function keepScreenOn() {
-        let video = document.querySelector('video');
-        if (video) {
-            let wakeLock = null;
-
-            const requestWakeLock = async () => {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                } catch (err) {
-                    console.error(`${err.name}, ${err.message}`);
-                }
-            };
-
-            const releaseWakeLock = () => {
-                if (wakeLock !== null) {
-                    wakeLock.release()
-                        .then(() => {
-                            wakeLock = null;
-                        });
-                }
-            };
-
-            video.addEventListener('play', requestWakeLock);
-            video.addEventListener('pause', releaseWakeLock);
-            video.addEventListener('ended', releaseWakeLock);
+        if ('wakeLock' in navigator) {
+            navigator.wakeLock.request('screen')
+                .then(() => console.log('Screen wake lock acquired.'))
+                .catch(err => console.error(`Error acquiring screen wake lock: ${err}`));
+        } else {
+            console.warn('Wake lock not supported.');
         }
     }
 
-    let observer = new MutationObserver(() => {
-        keepScreenOn();
-    });
+    // Function to release the wake lock
+    function releaseWakeLock() {
+        if ('wakeLock' in navigator && navigator.wakeLock.release) {
+            navigator.wakeLock.release()
+                .then(() => console.log('Screen wake lock released.'))
+                .catch(err => console.error(`Error releasing screen wake lock: ${err}`));
+        }
+    }
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    // Monitor video play and pause events
+    document.addEventListener('play', (event) => {
+        if (event.target.tagName === 'VIDEO') {
+            keepScreenOn();
+            event.target.addEventListener('ended', releaseWakeLock);
+            event.target.addEventListener('pause', releaseWakeLock);
+        }
+    }, true);
 })();
