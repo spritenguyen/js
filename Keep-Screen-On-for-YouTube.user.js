@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Keep Screen On for YouTube
 // @namespace    https://yournamespacehere.com
-// @version      1.1
+// @version      1.2
 // @description  Keep screen on while playing YouTube videos, turn off when video stops or ends
 // @author       YourName
 // @match        *://*.youtube.com/*
@@ -11,31 +11,28 @@
 (function() {
     'use strict';
 
-    let wakeLock = null;
+    let intervalId = null;
 
-    async function requestWakeLock() {
-        try {
-            wakeLock = await navigator.wakeLock.request('screen');
-            wakeLock.addEventListener('release', () => {
-                console.log('Screen wake lock released.');
-            });
-            console.log('Screen wake lock acquired.');
-        } catch (err) {
-            console.error(`Error acquiring screen wake lock: ${err}`);
+    function preventScreenTimeout() {
+        if (intervalId !== null) {
+            clearInterval(intervalId);
         }
+        intervalId = setInterval(() => {
+            document.body.style.visibility = 'hidden';
+            document.body.style.visibility = 'visible';
+        }, 50000); // Adjust interval as needed
     }
 
-    function releaseWakeLock() {
-        if (wakeLock !== null) {
-            wakeLock.release()
-                .catch(err => console.error(`Error releasing screen wake lock: ${err}`));
-            wakeLock = null;
+    function stopPreventingScreenTimeout() {
+        if (intervalId !== null) {
+            clearInterval(intervalId);
+            intervalId = null;
         }
     }
 
     function onVideoPlay(event) {
         if (event.target.tagName === 'VIDEO') {
-            requestWakeLock();
+            preventScreenTimeout();
             event.target.addEventListener('pause', onVideoPauseOrEnd);
             event.target.addEventListener('ended', onVideoPauseOrEnd);
         }
@@ -43,7 +40,7 @@
 
     function onVideoPauseOrEnd(event) {
         if (event.target.tagName === 'VIDEO') {
-            releaseWakeLock();
+            stopPreventingScreenTimeout();
             event.target.removeEventListener('pause', onVideoPauseOrEnd);
             event.target.removeEventListener('ended', onVideoPauseOrEnd);
         }
