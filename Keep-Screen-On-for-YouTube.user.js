@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Keep Screen On for YouTube
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.5
 // @description  Giữ màn hình luôn sáng khi xem video trên YouTube
 // @author       Your Name
 // @match        https://www.youtube.com/*
@@ -17,6 +17,7 @@
         try {
             if (!wakeLock) {
                 wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock is active');
             }
         } catch (err) {
             console.error(`${err.name}, ${err.message}`);
@@ -28,6 +29,7 @@
             try {
                 await wakeLock.release();
                 wakeLock = null;
+                console.log('Wake Lock is released');
             } catch (err) {
                 console.error(`${err.name}, ${err.message}`);
             }
@@ -36,28 +38,30 @@
 
     const manageWakeLock = () => {
         const video = document.querySelector('video');
-        if (video && !video.paused) {
-            requestWakeLock();
-        } else {
-            releaseWakeLock();
+        if (video) {
+            if (!video.paused) {
+                requestWakeLock();
+            } else {
+                releaseWakeLock();
+            }
         }
     };
 
-    const keepScreenOn = () => {
+    const setupWakeLock = () => {
         const video = document.querySelector('video');
         if (video) {
             video.addEventListener('play', requestWakeLock);
-            video.addEventListenerWakeLock);
+            video.addEventListener('pause', releaseWakeLock);
             video.addEventListener('ended', releaseWakeLock);
         }
     };
 
-    keepScreenOn();
-
+    setupWakeLock();
     document.addEventListener('fullscreenchange', manageWakeLock);
 
-    const observer = new MutationObserver(keepScreenOn);
+    const observer = new MutationObserver(setupWakeLock);
     observer.observe(document.body, { childList: true, subtree: true });
 
-    setInterval(manageWakeLock, 60000);
+    window.addEventListener('beforeunload', releaseWakeLock);
+
 })();
