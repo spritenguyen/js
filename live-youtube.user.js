@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Live Button
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Thêm nút để tìm đến thời gian hiện tại khi xem live stream trên YouTube
 // @author       Your Name
 // @match        https://www.youtube.com/*
@@ -29,7 +29,11 @@
             const videoPlayer = document.querySelector('video');
             if (videoPlayer) {
                 const seekToLive = () => {
-                    if (videoPlayer.readyState >= 3 && !videoPlayer.seeking) {
+                    const currentTime = videoPlayer.currentTime;
+                    const duration = videoPlayer.duration;
+                    const bufferEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
+
+                    if (duration - currentTime < 1 || bufferEnd - currentTime < 1) {
                         videoPlayer.currentTime = videoPlayer.seekable.end(0);
                         videoPlayer.play();
                     } else {
