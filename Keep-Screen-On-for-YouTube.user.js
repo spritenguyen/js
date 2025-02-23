@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Keep Screen On for YouTube
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  Giữ màn hình luôn sáng khi xem video trên YouTube
 // @author       Your Name
 // @match        https://www.youtube.com/*
@@ -36,6 +36,11 @@
             video.addEventListener('play', requestWakeLock);
             video.addEventListener('pause', releaseWakeLock);
             video.addEventListener('ended', releaseWakeLock);
+            video.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement) {
+                    releaseWakeLock();
+                }
+            });
         }
     }
 
@@ -44,4 +49,9 @@
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
+
+    // Re-check the video element every 1 minute
+    setInterval(() => {
+        keepScreenOn();
+    }, 60000);
 })();
