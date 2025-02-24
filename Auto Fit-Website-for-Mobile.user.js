@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Auto Fit Website for Mobile
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Adjust website layout for mobile screens
 // @author       Your Name
-// @match        *://*/*
+// @match        *://*.youtube.com/*
 // @grant        none
 // ==/UserScript==
 
