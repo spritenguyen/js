@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Auto Fit Website for Mobile
+// @name         Auto Fit youtube for Mobile
 // @namespace    http://tampermonkey.net/
 // @version      0.4
 // @description  Adjust website layout for mobile screens and hide recommended channels
