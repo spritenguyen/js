@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Universal Video Controls (Final Optimized)
+// @name         Universal Video Controls (Optimized)
 // @namespace    http://tampermonkey.net/
-// @version      2.1.0
-// @description  Thêm các nút điều khiển, chế độ PiP, chụp ảnh màn hình, khôi phục tốc độ mặc định và quay video HTML5. Tối ưu trên Windows và Android với giao diện responsive hiện đại.
+// @version      2.2.0
+// @description  Thêm các nút điều khiển video HTML5 với giao diện responsive hiện đại.
 // @author       Bạn
 // @match        *://*/*
 // @grant        none
@@ -11,166 +11,88 @@
 (function () {
     'use strict';
 
-    // Xử lý từng video trên trang
-    document.querySelectorAll('video').forEach(video => {
-        if (!video.parentElement || video.dataset.controlsEnhanced) return;
-
+    // Xử lý tất cả các video trên trang
+    const enhanceVideo = (video) => {
+        if (video.dataset.controlsEnhanced) return;
         video.dataset.controlsEnhanced = true;
 
         // Tạo container cho các nút điều khiển
         const controlContainer = document.createElement('div');
-        controlContainer.style.position = 'absolute';
-        controlContainer.style.bottom = '10px';
-        controlContainer.style.left = '50%';
-        controlContainer.style.transform = 'translateX(-50%)';
-        controlContainer.style.background = 'rgba(0, 0, 0, 0.7)';
-        controlContainer.style.borderRadius = '10px';
-        controlContainer.style.padding = '5px';
-        controlContainer.style.display = 'flex';
-        controlContainer.style.flexWrap = 'wrap';
-        controlContainer.style.gap = '5px';
-        controlContainer.style.justifyContent = 'center';
-        controlContainer.style.zIndex = '9999';
-        controlContainer.style.maxWidth = '90%';
+        Object.assign(controlContainer.style, {
+            position: 'absolute',
+            top: '10px', // Đặt container lên trên
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(0, 0, 0, 0.7)',
+            borderRadius: '10px',
+            padding: '5px',
+            display: 'flex',
+            gap: '5px',
+            justifyContent: 'center',
+            zIndex: '9999',
+            maxWidth: '90%',
+            opacity: '0',
+            transition: 'opacity 0.3s',
+        });
 
-        // Hàm tạo các nút
-        const createButton = (text, onClick) => {
+        // Hàm tạo nút điều khiển
+        const createButton = (label, onClick) => {
             const button = document.createElement('button');
-            button.innerText = text;
-            button.style.background = 'rgba(255, 255, 255, 0.2)';
-            button.style.color = 'white';
-            button.style.border = '1px solid white';
-            button.style.borderRadius = '5px';
-            button.style.padding = '10px';
-            button.style.cursor = 'pointer';
-            button.style.fontSize = '12px';
-            button.addEventListener('click', onClick);
-            button.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                onClick();
+            Object.assign(button.style, {
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: 'white',
+                border: '1px solid white',
+                borderRadius: '5px',
+                padding: '10px',
+                cursor: 'pointer',
+                fontSize: '12px',
             });
+            button.innerText = label;
+            button.onclick = onClick;
             return button;
         };
 
-        // Biến hỗ trợ quay video
-        let mediaRecorder;
-        let chunks = [];
-        const startRecording = () => {
-            chunks = [];
-            const stream = video.captureStream();
-            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-
-            mediaRecorder.ondataavailable = (e) => {
-                if (e.data.size > 0) chunks.push(e.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'recording.webm';
-                link.click();
-            };
-
-            mediaRecorder.start();
-        };
-
-        const stopRecording = () => {
-            if (mediaRecorder) {
-                mediaRecorder.stop();
-            }
-        };
-
         // Nút chức năng
-        const pauseButton = createButton('⏯️ Pause/Play', () => {
-            video.paused ? video.play() : video.pause();
-        });
+        const buttons = [
+            { label: '⏪ -10s', action: () => (video.currentTime -= 10) },
+            { label: '⏯️ Pause/Play', action: () => (video.paused ? video.play() : video.pause()) },
+            { label: '⏩ +10s', action: () => (video.currentTime += 10) },
+            { label: '➖ Speed -0.5', action: () => (video.playbackRate = Math.max(video.playbackRate - 0.5, 0.5)) },
+            { label: '🔄 Reset Speed', action: () => (video.playbackRate = 1) },
+            { label: '➕ Speed +0.5', action: () => (video.playbackRate = Math.min(video.playbackRate + 0.5, 16)) },
+            { label: '📸 Screenshot', action: () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const link = document.createElement('a');
+                link.download = 'screenshot.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }},
+        ];
 
-        const rewindButton = createButton('⏪ -10s', () => {
-            video.currentTime -= 10;
-        });
-
-        const forwardButton = createButton('⏩ +10s', () => {
-            video.currentTime += 10;
-        });
-
-        const decreaseSpeedButton = createButton('➖ Speed -0.5', () => {
-            video.playbackRate = Math.max(video.playbackRate - 0.5, 0.5);
-        });
-
-        const resetSpeedButton = createButton('🔄 Reset Speed', () => {
-            video.playbackRate = 1.0;
-        });
-
-        const increaseSpeedButton = createButton('➕ Speed +0.5', () => {
-            video.playbackRate = Math.min(video.playbackRate + 0.5, 16.0);
-        });
-
-        const pipButton = createButton('🔳 Force PiP', async () => {
-            if (video !== document.pictureInPictureElement) {
-                try {
-                    await video.requestPictureInPicture();
-                } catch (error) {
-                    alert('Chế độ Picture-in-Picture không khả dụng trên trình duyệt này.');
-                    console.error(error);
-                }
-            } else {
-                await document.exitPictureInPicture();
-            }
-        });
-
-        const screenshotButton = createButton('📸 Screenshot', () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            const link = document.createElement('a');
-            link.download = 'screenshot.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        });
-
-        const recordVideoButton = createButton('📹 Start Video', () => {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-                startRecording();
-                recordVideoButton.innerText = '⏹️ Stop Video';
-            } else {
-                stopRecording();
-                recordVideoButton.innerText = '📹 Start Video';
-            }
-        });
-
-        // Thêm các nút vào container theo thứ tự
-        controlContainer.appendChild(rewindButton);
-        controlContainer.appendChild(pauseButton);
-        controlContainer.appendChild(forwardButton);
-        controlContainer.appendChild(decreaseSpeedButton);
-        controlContainer.appendChild(resetSpeedButton); // Nút reset ở giữa
-        controlContainer.appendChild(increaseSpeedButton);
-        controlContainer.appendChild(recordVideoButton); // Nút quay video
-        controlContainer.appendChild(pipButton);
-        controlContainer.appendChild(screenshotButton);
-
-        // Gắn container vào video
+        // Thêm các nút vào container
+        buttons.forEach(({ label, action }) => controlContainer.appendChild(createButton(label, action)));
         video.parentElement.style.position = 'relative';
         video.parentElement.appendChild(controlContainer);
 
-        // Hiệu ứng hiện/ẩn container khi di chuột hoặc chạm
-        controlContainer.style.opacity = '0';
-        controlContainer.style.transition = 'opacity 0.3s';
-
+        // Hiển thị/ẩn container khi di chuột
         const showControls = () => {
             controlContainer.style.opacity = '1';
             clearTimeout(video._hideTimeout);
-            video._hideTimeout = setTimeout(() => {
-                controlContainer.style.opacity = '0';
-            }, 3000); // Ẩn sau 3 giây không tương tác
+            video._hideTimeout = setTimeout(() => (controlContainer.style.opacity = '0'), 3000);
         };
 
         video.addEventListener('mousemove', showControls);
         video.addEventListener('touchstart', showControls);
+    };
+
+    // Theo dõi các video được tải vào DOM
+    const observer = new MutationObserver(() => {
+        document.querySelectorAll('video').forEach(enhanceVideo);
     });
+
+    observer.observe(document.body, { childList: true, subtree: true });
 })();
