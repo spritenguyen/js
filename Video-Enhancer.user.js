@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Enhanced Video Player for Mobile
+// @name         Enhanced Video Player (Middle Controls)
 // @namespace    https://yourdomain.com
-// @version      2.0
-// @description  Tăng cường tua nhanh, tốc độ phát video, khóa màn hình và hỗ trợ toàn màn hình trên trình duyệt di động.
+// @version      2.1
+// @description  Tua nhanh, tốc độ phát video, khóa màn hình với nút điều khiển ở giữa video và hỗ trợ toàn màn hình.
 // @author       Your Name
 // @match        *://*/*
 // @grant        none
@@ -14,7 +14,7 @@
     const video = document.querySelector('video');
     if (!video) return;
 
-    // Tạo lớp overlay chứa các điều khiển
+    // Tạo lớp overlay để chứa các nút điều khiển
     const overlay = document.createElement('div');
     Object.assign(overlay.style, {
         position: 'fixed',
@@ -24,26 +24,22 @@
         height: '100%',
         zIndex: 1000,
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
         alignItems: 'center',
-        padding: '10px',
         pointerEvents: 'none',
     });
     document.body.appendChild(overlay);
 
-    // Tạo container nút
+    // Container cho các nút
     const controls = document.createElement('div');
     Object.assign(controls.style, {
         pointerEvents: 'auto',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Nền đen trong suốt
+        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Nền đen trong suốt
         borderRadius: '10px',
         padding: '10px',
         display: 'flex',
         flexDirection: 'row',
         gap: '10px',
-        opacity: 1,
-        transition: 'opacity 0.5s',
     });
     overlay.appendChild(controls);
 
@@ -54,8 +50,8 @@
         btn.onclick = onclick;
         Object.assign(btn.style, {
             padding: '10px 15px',
-            backgroundColor: 'transparent', // Nền trong suốt
-            color: 'white', // Chữ trắng
+            backgroundColor: 'transparent',
+            color: 'white',
             border: '1px solid white',
             borderRadius: '5px',
             fontSize: '14px',
@@ -84,15 +80,18 @@
     const lockButton = createButton('🔒 Khóa', () => {
         isLocked = !isLocked;
         lockButton.innerText = isLocked ? '🔓 Mở khóa' : '🔒 Khóa';
+
+        // Khi khóa, vô hiệu hóa thao tác chạm bên ngoài các nút
+        overlay.style.pointerEvents = isLocked ? 'auto' : 'none';
     });
 
     document.addEventListener('touchstart', (e) => {
         if (isLocked && !controls.contains(e.target)) {
-            e.preventDefault();
+            e.preventDefault(); // Ngăn thao tác khi khóa
         }
     }, { passive: false });
 
-    // Tự động ẩn các nút sau 3 giây
+    // Tự động ẩn các nút sau 3 giây không thao tác
     let hideTimeout;
     const showControls = () => {
         controls.style.opacity = 1;
@@ -107,7 +106,6 @@
     const adjustForFullscreen = () => {
         const isFullscreen = !!document.fullscreenElement;
         overlay.style.position = isFullscreen ? 'absolute' : 'fixed';
-        overlay.style.bottom = isFullscreen ? '0' : 'unset';
     };
 
     document.addEventListener('fullscreenchange', adjustForFullscreen);
