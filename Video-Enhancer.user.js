@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Video Enhancer (Android-like Improved)
+// @name         Enhanced Video Player for Mobile
 // @namespace    https://yourdomain.com
-// @version      1.4
-// @description  Tua nhanh, tốc độ video và khóa màn hình với hỗ trợ toàn màn hình và giao diện đẹp hơn.
+// @version      2.0
+// @description  Tăng cường tua nhanh, tốc độ phát video, khóa màn hình và hỗ trợ toàn màn hình trên trình duyệt di động.
 // @author       Your Name
 // @match        *://*/*
 // @grant        none
@@ -12,10 +12,9 @@
     'use strict';
 
     const video = document.querySelector('video');
-
     if (!video) return;
 
-    // Tạo lớp overlay để chứa các phím điều khiển
+    // Tạo lớp overlay chứa các điều khiển
     const overlay = document.createElement('div');
     Object.assign(overlay.style, {
         position: 'fixed',
@@ -24,57 +23,58 @@
         width: '100%',
         height: '100%',
         zIndex: 1000,
-        pointerEvents: 'none',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
         alignItems: 'center',
+        padding: '10px',
+        pointerEvents: 'none',
     });
     document.body.appendChild(overlay);
 
-    // Container cho các phím điều khiển
+    // Tạo container nút
     const controls = document.createElement('div');
     Object.assign(controls.style, {
         pointerEvents: 'auto',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Nền đen trong suốt
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Nền đen trong suốt
         borderRadius: '10px',
         padding: '10px',
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
+        gap: '10px',
         opacity: 1,
         transition: 'opacity 0.5s',
     });
     overlay.appendChild(controls);
 
-    // Hàm tạo nút với giao diện tùy chỉnh
+    // Hàm tạo nút
     function createButton(text, onclick) {
         const btn = document.createElement('button');
         btn.innerText = text;
         btn.onclick = onclick;
         Object.assign(btn.style, {
-            margin: '5px',
-            padding: '10px',
+            padding: '10px 15px',
             backgroundColor: 'transparent', // Nền trong suốt
             color: 'white', // Chữ trắng
             border: '1px solid white',
             borderRadius: '5px',
-            fontSize: '16px',
+            fontSize: '14px',
             cursor: 'pointer',
         });
         controls.appendChild(btn);
     }
 
-    // Nút tua nhanh 10 giây
+    // Nút tua nhanh
     createButton('>> 10s', () => video.currentTime += 10);
 
-    // Nút tua lùi 10 giây
+    // Nút tua lùi
     createButton('<< 10s', () => video.currentTime -= 10);
 
-    // Nút thay đổi tốc độ phát video
+    // Nút thay đổi tốc độ phát
     const speedButton = createButton('Tốc độ: 1x', () => {
-        const speeds = [0.5, 1, 1.5, 2]; // Các tùy chọn tốc độ
+        const speeds = [0.5, 1, 1.5, 2];
         let currentIndex = speeds.indexOf(video.playbackRate);
-        currentIndex = (currentIndex + 1) % speeds.length; // Vòng lặp qua các tốc độ
+        currentIndex = (currentIndex + 1) % speeds.length;
         video.playbackRate = speeds[currentIndex];
         speedButton.innerText = `Tốc độ: ${speeds[currentIndex]}x`;
     });
@@ -88,25 +88,26 @@
 
     document.addEventListener('touchstart', (e) => {
         if (isLocked && !controls.contains(e.target)) {
-            e.preventDefault(); // Ngăn thao tác khi màn hình bị khóa
+            e.preventDefault();
         }
     }, { passive: false });
 
-    // Tự động ẩn nút sau 3 giây không thao tác
+    // Tự động ẩn các nút sau 3 giây
     let hideTimeout;
     const showControls = () => {
         controls.style.opacity = 1;
         clearTimeout(hideTimeout);
-        hideTimeout = setTimeout(() => controls.style.opacity = 0, 3000); // 3 giây
+        hideTimeout = setTimeout(() => (controls.style.opacity = 0), 3000);
     };
 
     document.addEventListener('touchstart', showControls);
     showControls();
 
-    // Đảm bảo hoạt động trong chế độ toàn màn hình
+    // Hỗ trợ chế độ toàn màn hình
     const adjustForFullscreen = () => {
         const isFullscreen = !!document.fullscreenElement;
         overlay.style.position = isFullscreen ? 'absolute' : 'fixed';
+        overlay.style.bottom = isFullscreen ? '0' : 'unset';
     };
 
     document.addEventListener('fullscreenchange', adjustForFullscreen);
