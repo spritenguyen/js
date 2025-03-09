@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Video Enhancer Android
+// @name         Video Enhancer (Android-like)
 // @namespace    https://yourdomain.com
-// @version      1.2
-// @description  Hỗ trợ tua nhanh, cử chỉ và khóa màn hình trên thiết bị Android
+// @version      1.3
+// @description  Tua nhanh, tốc độ video, và khóa màn hình giống Samsung Internet/Soul Browser
 // @author       Your Name
 // @match        *://*/*
 // @grant        none
@@ -24,26 +24,29 @@
         width: '100%',
         height: '100%',
         zIndex: 1000,
+        pointerEvents: 'none',
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        pointerEvents: 'none', // Không cản trở thao tác video
     });
     document.body.appendChild(overlay);
 
-    // Tạo container cho các nút
-    const buttonContainer = document.createElement('div');
-    Object.assign(buttonContainer.style, {
-        pointerEvents: 'auto', // Cho phép nhấn vào các nút
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    // Container cho nút
+    const controls = document.createElement('div');
+    Object.assign(controls.style, {
+        pointerEvents: 'auto',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         borderRadius: '10px',
         padding: '10px',
         display: 'flex',
         flexDirection: 'column',
+        opacity: 1,
+        transition: 'opacity 0.5s',
     });
-    overlay.appendChild(buttonContainer);
+    overlay.appendChild(controls);
 
-    // Tạo nút với chức năng cụ thể
+    // Tạo nút tua nhanh/lùi
     function createButton(text, onclick) {
         const btn = document.createElement('button');
         btn.innerText = text;
@@ -55,15 +58,26 @@
             color: 'black',
             border: 'none',
             borderRadius: '5px',
+            fontSize: '16px',
+            cursor: 'pointer',
         });
-        buttonContainer.appendChild(btn);
+        controls.appendChild(btn);
     }
 
-    // Nút tua nhanh
+    // Nút tua nhanh 10 giây
     createButton('>> 10s', () => video.currentTime += 10);
 
-    // Nút tua lùi
+    // Nút lùi 10 giây
     createButton('<< 10s', () => video.currentTime -= 10);
+
+    // Nút thay đổi tốc độ phát video
+    const speedButton = createButton('Tốc độ: 1x', () => {
+        const speeds = [0.5, 1, 1.5, 2]; // Các tùy chọn tốc độ
+        let currentIndex = speeds.indexOf(video.playbackRate);
+        currentIndex = (currentIndex + 1) % speeds.length; // Vòng lặp qua các tốc độ
+        video.playbackRate = speeds[currentIndex];
+        speedButton.innerText = `Tốc độ: ${speeds[currentIndex]}x`;
+    });
 
     // Nút khóa màn hình
     let isLocked = false;
@@ -72,43 +86,21 @@
         lockButton.innerText = isLocked ? '🔓 Mở khóa' : '🔒 Khóa';
     });
 
-    // Khóa cử chỉ khi màn hình bị khóa
     document.addEventListener('touchstart', (e) => {
-        if (isLocked && !buttonContainer.contains(e.target)) e.preventDefault();
+        if (isLocked && !controls.contains(e.target)) {
+            e.preventDefault(); // Ngăn thao tác khi màn hình bị khóa
+        }
     }, { passive: false });
 
-    // Cử chỉ vuốt
-    let startX = 0;
-    document.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
-    });
-
-    document.addEventListener('touchend', (e) => {
-        const endX = e.changedTouches[0].clientX;
-        if (endX - startX > 50) {
-            video.currentTime += 10; // Vuốt phải để tua nhanh
-        } else if (startX - endX > 50) {
-            video.currentTime -= 10; // Vuốt trái để tua lùi
-        }
-    });
-
-    // Tự động ẩn nút sau 10 giây
+    // Tự động ẩn nút sau 3 giây không thao tác
     let hideTimeout;
-    const showButtons = () => {
-        buttonContainer.style.display = 'flex';
+    const showControls = () => {
+        controls.style.opacity = 1;
         clearTimeout(hideTimeout);
-        hideTimeout = setTimeout(() => buttonContainer.style.display = 'none', 10000);
+        hideTimeout = setTimeout(() => controls.style.opacity = 0, 3000); // 3 giây
     };
 
-    document.addEventListener('touchstart', showButtons);
-    showButtons();
+    document.addEventListener('touchstart', showControls);
+    showControls();
 
-    // Đảm bảo hoạt động ở toàn màn hình
-    document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement) {
-            overlay.style.position = 'absolute';
-        } else {
-            overlay.style.position = 'fixed';
-        }
-    });
 })();
