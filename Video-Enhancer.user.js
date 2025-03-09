@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Enhanced Video Player (Middle Controls)
+// @name         Enhanced Video Player (Fullscreen Support)
 // @namespace    https://yourdomain.com
-// @version      2.1
-// @description  Tua nhanh, tốc độ phát video, khóa màn hình với nút điều khiển ở giữa video và hỗ trợ toàn màn hình.
+// @version      2.2
+// @description  Tăng cường tính năng tua nhanh, tốc độ phát video, khóa màn hình, và hỗ trợ chế độ toàn màn hình với trạng thái nút động hơn.
 // @author       Your Name
 // @match        *://*/*
 // @grant        none
@@ -40,24 +40,27 @@
         display: 'flex',
         flexDirection: 'row',
         gap: '10px',
+        opacity: 1,
+        transition: 'opacity 0.5s',
     });
     overlay.appendChild(controls);
 
-    // Hàm tạo nút
-    function createButton(text, onclick) {
+    // Hàm tạo nút với trạng thái động
+    function createButton(text, onclick, options = {}) {
         const btn = document.createElement('button');
         btn.innerText = text;
         btn.onclick = onclick;
         Object.assign(btn.style, {
             padding: '10px 15px',
-            backgroundColor: 'transparent',
-            color: 'white',
+            backgroundColor: options.bgColor || 'transparent',
+            color: options.color || 'white',
             border: '1px solid white',
             borderRadius: '5px',
             fontSize: '14px',
             cursor: 'pointer',
         });
         controls.appendChild(btn);
+        return btn;
     }
 
     // Nút tua nhanh
@@ -80,10 +83,9 @@
     const lockButton = createButton('🔒 Khóa', () => {
         isLocked = !isLocked;
         lockButton.innerText = isLocked ? '🔓 Mở khóa' : '🔒 Khóa';
-
-        // Khi khóa, vô hiệu hóa thao tác chạm bên ngoài các nút
-        overlay.style.pointerEvents = isLocked ? 'auto' : 'none';
-    });
+        lockButton.style.backgroundColor = isLocked ? 'red' : 'transparent'; // Thay đổi màu nền khi khóa
+        overlay.style.pointerEvents = isLocked ? 'auto' : 'none'; // Chặn thao tác khi khóa
+    }, { bgColor: 'transparent' });
 
     document.addEventListener('touchstart', (e) => {
         if (isLocked && !controls.contains(e.target)) {
@@ -106,6 +108,8 @@
     const adjustForFullscreen = () => {
         const isFullscreen = !!document.fullscreenElement;
         overlay.style.position = isFullscreen ? 'absolute' : 'fixed';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
     };
 
     document.addEventListener('fullscreenchange', adjustForFullscreen);
