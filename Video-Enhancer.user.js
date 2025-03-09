@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Video Enhancer (Android-like)
+// @name         Video Enhancer (Android-like Improved)
 // @namespace    https://yourdomain.com
-// @version      1.3
-// @description  Tua nhanh, tốc độ video, và khóa màn hình giống Samsung Internet/Soul Browser
+// @version      1.4
+// @description  Tua nhanh, tốc độ video và khóa màn hình với hỗ trợ toàn màn hình và giao diện đẹp hơn.
 // @author       Your Name
 // @match        *://*/*
 // @grant        none
@@ -15,7 +15,7 @@
 
     if (!video) return;
 
-    // Tạo lớp overlay
+    // Tạo lớp overlay để chứa các phím điều khiển
     const overlay = document.createElement('div');
     Object.assign(overlay.style, {
         position: 'fixed',
@@ -32,11 +32,11 @@
     });
     document.body.appendChild(overlay);
 
-    // Container cho nút
+    // Container cho các phím điều khiển
     const controls = document.createElement('div');
     Object.assign(controls.style, {
         pointerEvents: 'auto',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Nền đen trong suốt
         borderRadius: '10px',
         padding: '10px',
         display: 'flex',
@@ -46,7 +46,7 @@
     });
     overlay.appendChild(controls);
 
-    // Tạo nút tua nhanh/lùi
+    // Hàm tạo nút với giao diện tùy chỉnh
     function createButton(text, onclick) {
         const btn = document.createElement('button');
         btn.innerText = text;
@@ -54,9 +54,9 @@
         Object.assign(btn.style, {
             margin: '5px',
             padding: '10px',
-            backgroundColor: 'white',
-            color: 'black',
-            border: 'none',
+            backgroundColor: 'transparent', // Nền trong suốt
+            color: 'white', // Chữ trắng
+            border: '1px solid white',
             borderRadius: '5px',
             fontSize: '16px',
             cursor: 'pointer',
@@ -67,7 +67,7 @@
     // Nút tua nhanh 10 giây
     createButton('>> 10s', () => video.currentTime += 10);
 
-    // Nút lùi 10 giây
+    // Nút tua lùi 10 giây
     createButton('<< 10s', () => video.currentTime -= 10);
 
     // Nút thay đổi tốc độ phát video
@@ -103,4 +103,12 @@
     document.addEventListener('touchstart', showControls);
     showControls();
 
+    // Đảm bảo hoạt động trong chế độ toàn màn hình
+    const adjustForFullscreen = () => {
+        const isFullscreen = !!document.fullscreenElement;
+        overlay.style.position = isFullscreen ? 'absolute' : 'fixed';
+    };
+
+    document.addEventListener('fullscreenchange', adjustForFullscreen);
+    adjustForFullscreen();
 })();
