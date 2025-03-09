@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Universal Video Controls (Highly Optimized)
+// @name         Universal Video Controls (Optimized Pro)
 // @namespace    http://tampermonkey.net/
-// @version      2.3.0
-// @description  Thêm các nút điều khiển video HTML5 với giao diện tối ưu, hỗ trợ mọi kích thước màn hình.
+// @version      2.4.0
+// @description  Điều khiển video HTML5 hiện đại, hỗ trợ tương tác mượt mà trên mọi thiết bị và kích thước màn hình.
 // @author       Bạn
 // @match        *://*/*
 // @grant        none
@@ -11,7 +11,11 @@
 (function () {
     'use strict';
 
-    // Hàm tạo container và nút
+    /**
+     * Tạo container điều khiển cho video
+     * @param {HTMLVideoElement} video
+     * @returns {HTMLDivElement} container
+     */
     const createControlContainer = (video) => {
         const container = document.createElement('div');
         Object.assign(container.style, {
@@ -29,7 +33,8 @@
             zIndex: '9999',
             maxWidth: '90%',
             opacity: '0',
-            transition: 'opacity 0.3s',
+            pointerEvents: 'none', // Vô hiệu hoá tương tác mặc định
+            transition: 'opacity 0.3s, pointer-events 0s linear 0.3s', // Đồng bộ pointer-events với opacity
         });
 
         const buttons = [
@@ -73,7 +78,10 @@
         return container;
     };
 
-    // Hàm xử lý từng video
+    /**
+     * Kích hoạt điều khiển cho video
+     * @param {HTMLVideoElement} video
+     */
     const enhanceVideo = (video) => {
         if (video.dataset.controlsEnhanced) return;
         video.dataset.controlsEnhanced = true;
@@ -84,15 +92,19 @@
 
         const showControls = () => {
             controlContainer.style.opacity = '1';
+            controlContainer.style.pointerEvents = 'auto'; // Kích hoạt tương tác khi hiện
             clearTimeout(video._hideTimeout);
-            video._hideTimeout = setTimeout(() => (controlContainer.style.opacity = '0'), 3000);
+            video._hideTimeout = setTimeout(() => {
+                controlContainer.style.opacity = '0';
+                controlContainer.style.pointerEvents = 'none'; // Vô hiệu hoá tương tác khi ẩn
+            }, 3000);
         };
 
         video.addEventListener('mousemove', showControls);
         video.addEventListener('touchstart', showControls);
     };
 
-    // Theo dõi video được thêm vào DOM
+    // Theo dõi video thêm vào DOM
     const observer = new MutationObserver(() => {
         document.querySelectorAll('video').forEach(enhanceVideo);
     });
