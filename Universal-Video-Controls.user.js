@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Universal Video Controls (Responsive and Optimized)
+// @name         Universal Video Controls (Final Optimized)
 // @namespace    http://tampermonkey.net/
-// @version      1.9.0
-// @description  Thêm các nút điều khiển, chế độ PiP, chụp ảnh màn hình, và khôi phục tốc độ mặc định cho video HTML5. Được tối ưu cho Windows và Android, với bố cục responsive hỗ trợ mọi màn hình.
+// @version      2.1.0
+// @description  Thêm các nút điều khiển, chế độ PiP, chụp ảnh màn hình, khôi phục tốc độ mặc định và quay video HTML5. Tối ưu trên Windows và Android với giao diện responsive hiện đại.
 // @author       Bạn
 // @match        *://*/*
 // @grant        none
@@ -52,7 +52,37 @@
             return button;
         };
 
-        // Các nút chức năng
+        // Biến hỗ trợ quay video
+        let mediaRecorder;
+        let chunks = [];
+        const startRecording = () => {
+            chunks = [];
+            const stream = video.captureStream();
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'recording.webm';
+                link.click();
+            };
+
+            mediaRecorder.start();
+        };
+
+        const stopRecording = () => {
+            if (mediaRecorder) {
+                mediaRecorder.stop();
+            }
+        };
+
+        // Nút chức năng
         const pauseButton = createButton('⏯️ Pause/Play', () => {
             video.paused ? video.play() : video.pause();
         });
@@ -103,6 +133,16 @@
             link.click();
         });
 
+        const recordVideoButton = createButton('📹 Start Video', () => {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                startRecording();
+                recordVideoButton.innerText = '⏹️ Stop Video';
+            } else {
+                stopRecording();
+                recordVideoButton.innerText = '📹 Start Video';
+            }
+        });
+
         // Thêm các nút vào container theo thứ tự
         controlContainer.appendChild(rewindButton);
         controlContainer.appendChild(pauseButton);
@@ -110,6 +150,7 @@
         controlContainer.appendChild(decreaseSpeedButton);
         controlContainer.appendChild(resetSpeedButton); // Nút reset ở giữa
         controlContainer.appendChild(increaseSpeedButton);
+        controlContainer.appendChild(recordVideoButton); // Nút quay video
         controlContainer.appendChild(pipButton);
         controlContainer.appendChild(screenshotButton);
 
