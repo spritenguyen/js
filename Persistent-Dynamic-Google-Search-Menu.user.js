@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Optimized Dynamic Search Menu
 // @namespace    http://tampermonkey.net/
-// @version      1.9.2
+// @version      1.9.5
 // @description  Tạo menu tìm kiếm linh hoạt, ổn định trên mọi trình duyệt và website (hỗ trợ Desktop + Android)
-// @author
+// @author       
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
@@ -38,7 +38,7 @@
         // Xóa menu cũ nếu tồn tại
         const existingMenu = document.getElementById('custom-search-menu');
         if (existingMenu) {
-            document.body.removeChild(existingMenu);
+            existingMenu.remove();
         }
 
         let searchMenu = document.createElement('div');
@@ -55,17 +55,25 @@
             optionElement.textContent = option.name;
             optionElement.style.padding = '5px';
             optionElement.onclick = function() {
-                let searchUrl = `https://www.google.com/search?q=${encodeURIComponent(selectedText + option.suffix)}`;
-                window.open(searchUrl, '_blank');
-                document.body.removeChild(searchMenu);
-                menuVisible = false; // Cập nhật trạng thái
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(selectedText + option.suffix)}`;
+                const newTab = window.open(searchUrl, '_blank');
+                if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                    alert('Trình duyệt của bạn đang chặn cửa sổ bật lên. Vui lòng cho phép popup để sử dụng tính năng này.');
+                } else {
+                    newTab.focus(); // Đảm bảo tab mới mở được kích hoạt
+                }
+
+                if (searchMenu.parentNode) {
+                    searchMenu.remove(); // Xóa menu sau khi click
+                }
+                menuVisible = false;
             };
             searchMenu.appendChild(optionElement);
         });
 
         document.body.appendChild(searchMenu);
 
-        // Tính toán vị trí menu so với các biên màn hình và cuộn trang
+        // Tính toán vị trí menu so với màn hình và bù cuộn
         const menuWidth = searchMenu.offsetWidth;
         const menuHeight = searchMenu.offsetHeight;
         const viewportWidth = window.innerWidth;
@@ -74,22 +82,21 @@
         let finalX = mouseX;
         let finalY = mouseY;
 
-        // Điều chỉnh vị trí tránh tràn ra ngoài màn hình
-        if (finalX + menuWidth > viewportWidth + window.scrollX) finalX = viewportWidth + window.scrollX - menuWidth - 10; // Biên phải
-        if (finalY + menuHeight > viewportHeight + window.scrollY) finalY = viewportHeight + window.scrollY - menuHeight - 10; // Biên dưới
-        if (finalX < window.scrollX) finalX = window.scrollX + 10; // Biên trái
-        if (finalY < window.scrollY) finalY = window.scrollY + 10; // Biên trên
+        if (finalX + menuWidth > viewportWidth + window.scrollX) finalX = viewportWidth + window.scrollX - menuWidth - 10;
+        if (finalY + menuHeight > viewportHeight + window.scrollY) finalY = viewportHeight + window.scrollY - menuHeight - 10;
+        if (finalX < window.scrollX) finalX = window.scrollX + 10;
+        if (finalY < window.scrollY) finalY = window.scrollY + 10;
 
         searchMenu.style.left = `${finalX}px`;
         searchMenu.style.top = `${finalY}px`;
         menuVisible = true;
 
-        // Tự động ẩn menu sau 3 giây nếu không có tương tác
+        // Tự động ẩn menu sau 3 giây nếu không tương tác
         hideTimeout = setTimeout(() => {
-            if (document.body.contains(searchMenu)) {
-                document.body.removeChild(searchMenu);
-                menuVisible = false;
+            if (searchMenu.parentNode) {
+                searchMenu.remove();
             }
+            menuVisible = false;
         }, 3000);
     }
 
@@ -97,29 +104,22 @@
     document.addEventListener('mousemove', function(event) {
         const selectedText = window.getSelection().toString().trim();
         if (selectedText && !menuVisible) {
-            clearTimeout(hoverTimeout); // Hủy bộ đếm nếu đã bắt đầu
+            clearTimeout(hoverTimeout);
             hoverTimeout = setTimeout(() => {
-                createContextMenu(selectedText, event.pageX, event.pageY); // Hiển thị menu
+                createContextMenu(selectedText, event.pageX, event.pageY);
             }, 1000); // Trì hoãn 1 giây
         } else {
-            clearTimeout(hoverTimeout); // Hủy hiển thị nếu không có bôi đen
+            clearTimeout(hoverTimeout);
         }
     });
 
     // Android: Xử lý sự kiện chạm
     document.addEventListener('touchstart', function(event) {
         const selectedText = window.getSelection().toString().trim();
-        const touch = event.touches[0]; // Lấy tọa độ chạm đầu tiên
+        const touch = event.touches[0];
         if (selectedText && !menuVisible) {
             clearTimeout(hideTimeout);
-            createContextMenu(selectedText, touch.pageX, touch.pageY); // Hiển thị menu
-        }
-    });
-
-    // Hàm gọi giao diện chỉnh sửa tùy chọn (phím Ctrl + Shift + F)
-    document.addEventListener('keydown', function(event) {
-        if (event.ctrlKey && event.shiftKey && event.key === 'F') {
-            showSettingsUI();
+            createContextMenu(selectedText, touch.pageX, touch.pageY);
         }
     });
 
@@ -205,9 +205,16 @@
         let closeBtn = document.createElement('button');
         closeBtn.textContent = 'Close';
         closeBtn.style.marginLeft = '10px';
-        closeBtn.onclick = () => document.body.removeChild(ui);
+        closeBtn.onclick = () => ui.remove();
         ui.appendChild(closeBtn);
 
         document.body.appendChild(ui);
     }
+
+    // Gọi giao diện chỉnh sửa (Ctrl + Shift + F)
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.shiftKey && event.key === 'F') {
+            showSettingsUI();
+        }
+    });
 })();
