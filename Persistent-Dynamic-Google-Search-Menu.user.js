@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Persistent Dynamic Google Search Menu with Updated Shortcut
+// @name         Optimized Dynamic Search Menu
 // @namespace    http://tampermonkey.net/
-// @version      1.4.3
-// @description  Tạo menu tùy chọn tìm kiếm động trên Google với menu theo chuột và phím tắt Ctrl + Shift + F để mở box cập nhật định nghĩa tùy chọn tìm kiếm
+// @version      1.9.2
+// @description  Tạo menu tìm kiếm linh hoạt, ổn định trên mọi trình duyệt và website (hỗ trợ Desktop + Android)
 // @author
 // @match        *://*/*
 // @grant        none
@@ -12,8 +12,11 @@
     'use strict';
 
     const STORAGE_KEY = 'customSearchOptions';
+    let menuVisible = false; // Trạng thái menu hiển thị
+    let hoverTimeout; // Đếm thời gian hiển thị menu
+    let hideTimeout; // Đếm thời gian ẩn menu
 
-    // Hàm lấy các tùy chọn tìm kiếm từ localStorage
+    // Tải tùy chọn tìm kiếm từ localStorage
     function loadSearchOptions() {
         const savedOptions = localStorage.getItem(STORAGE_KEY);
         return savedOptions ? JSON.parse(savedOptions) : [
@@ -22,15 +25,105 @@
         ];
     }
 
-    // Hàm lưu các tùy chọn tìm kiếm vào localStorage
+    // Lưu tùy chọn tìm kiếm vào localStorage
     function saveSearchOptions() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(searchOptions));
     }
 
-    // Định nghĩa các tùy chọn tìm kiếm ban đầu
+    // Các tùy chọn tìm kiếm
     let searchOptions = loadSearchOptions();
 
-    // Hàm hiển thị giao diện tùy chỉnh
+    // Hàm tạo và hiển thị menu tìm kiếm
+    function createContextMenu(selectedText, mouseX, mouseY) {
+        // Xóa menu cũ nếu tồn tại
+        const existingMenu = document.getElementById('custom-search-menu');
+        if (existingMenu) {
+            document.body.removeChild(existingMenu);
+        }
+
+        let searchMenu = document.createElement('div');
+        searchMenu.id = 'custom-search-menu';
+        searchMenu.style.position = 'absolute';
+        searchMenu.style.backgroundColor = 'white';
+        searchMenu.style.border = '1px solid black';
+        searchMenu.style.padding = '5px';
+        searchMenu.style.zIndex = '9999';
+        searchMenu.style.cursor = 'pointer';
+
+        searchOptions.forEach(option => {
+            let optionElement = document.createElement('div');
+            optionElement.textContent = option.name;
+            optionElement.style.padding = '5px';
+            optionElement.onclick = function() {
+                let searchUrl = `https://www.google.com/search?q=${encodeURIComponent(selectedText + option.suffix)}`;
+                window.open(searchUrl, '_blank');
+                document.body.removeChild(searchMenu);
+                menuVisible = false; // Cập nhật trạng thái
+            };
+            searchMenu.appendChild(optionElement);
+        });
+
+        document.body.appendChild(searchMenu);
+
+        // Tính toán vị trí menu so với các biên màn hình và cuộn trang
+        const menuWidth = searchMenu.offsetWidth;
+        const menuHeight = searchMenu.offsetHeight;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let finalX = mouseX;
+        let finalY = mouseY;
+
+        // Điều chỉnh vị trí tránh tràn ra ngoài màn hình
+        if (finalX + menuWidth > viewportWidth + window.scrollX) finalX = viewportWidth + window.scrollX - menuWidth - 10; // Biên phải
+        if (finalY + menuHeight > viewportHeight + window.scrollY) finalY = viewportHeight + window.scrollY - menuHeight - 10; // Biên dưới
+        if (finalX < window.scrollX) finalX = window.scrollX + 10; // Biên trái
+        if (finalY < window.scrollY) finalY = window.scrollY + 10; // Biên trên
+
+        searchMenu.style.left = `${finalX}px`;
+        searchMenu.style.top = `${finalY}px`;
+        menuVisible = true;
+
+        // Tự động ẩn menu sau 3 giây nếu không có tương tác
+        hideTimeout = setTimeout(() => {
+            if (document.body.contains(searchMenu)) {
+                document.body.removeChild(searchMenu);
+                menuVisible = false;
+            }
+        }, 3000);
+    }
+
+    // Desktop: Xử lý sự kiện chuột
+    document.addEventListener('mousemove', function(event) {
+        const selectedText = window.getSelection().toString().trim();
+        if (selectedText && !menuVisible) {
+            clearTimeout(hoverTimeout); // Hủy bộ đếm nếu đã bắt đầu
+            hoverTimeout = setTimeout(() => {
+                createContextMenu(selectedText, event.pageX, event.pageY); // Hiển thị menu
+            }, 1000); // Trì hoãn 1 giây
+        } else {
+            clearTimeout(hoverTimeout); // Hủy hiển thị nếu không có bôi đen
+        }
+    });
+
+    // Android: Xử lý sự kiện chạm
+    document.addEventListener('touchstart', function(event) {
+        const selectedText = window.getSelection().toString().trim();
+        const touch = event.touches[0]; // Lấy tọa độ chạm đầu tiên
+        if (selectedText && !menuVisible) {
+            clearTimeout(hideTimeout);
+            createContextMenu(selectedText, touch.pageX, touch.pageY); // Hiển thị menu
+        }
+    });
+
+    // Hàm gọi giao diện chỉnh sửa tùy chọn (phím Ctrl + Shift + F)
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.shiftKey && event.key === 'F') {
+            showSettingsUI();
+        }
+    });
+
+    // Giao diện quản lý tùy chọn tìm kiếm
     function showSettingsUI() {
         let ui = document.createElement('div');
         ui.id = 'settings-ui';
@@ -68,7 +161,7 @@
             deleteBtn.style.marginLeft = '10px';
             deleteBtn.onclick = () => {
                 searchOptions.splice(index, 1);
-                saveSearchOptions(); // Lưu thay đổi
+                saveSearchOptions();
                 ui.remove();
                 showSettingsUI();
             };
@@ -78,11 +171,11 @@
 
             inputName.onchange = () => {
                 option.name = inputName.value;
-                saveSearchOptions(); // Lưu thay đổi
+                saveSearchOptions();
             };
             inputSuffix.onchange = () => {
                 option.suffix = inputSuffix.value;
-                saveSearchOptions(); // Lưu thay đổi
+                saveSearchOptions();
             };
         });
 
@@ -92,7 +185,7 @@
         addBtn.textContent = 'Add Option';
         addBtn.onclick = () => {
             searchOptions.push({ name: 'New Option', suffix: ' ' });
-            saveSearchOptions(); // Lưu thay đổi
+            saveSearchOptions();
             ui.remove();
             showSettingsUI();
         };
@@ -103,7 +196,7 @@
         clearAllBtn.style.marginLeft = '10px';
         clearAllBtn.onclick = () => {
             searchOptions = [];
-            saveSearchOptions(); // Lưu thay đổi
+            saveSearchOptions();
             ui.remove();
             showSettingsUI();
         };
@@ -117,66 +210,4 @@
 
         document.body.appendChild(ui);
     }
-
-    // Hàm tạo menu tìm kiếm
-    function createContextMenu(selectedText, mouseX, mouseY) {
-        let searchMenu = document.createElement('div');
-        searchMenu.id = 'custom-search-menu';
-        searchMenu.style.position = 'absolute';
-        searchMenu.style.backgroundColor = 'white';
-        searchMenu.style.border = '1px solid black';
-        searchMenu.style.padding = '5px';
-        searchMenu.style.zIndex = '9999';
-        searchMenu.style.cursor = 'pointer';
-
-        // Định vị menu theo tọa độ chuột
-        searchMenu.style.left = `${mouseX}px`;
-        searchMenu.style.top = `${mouseY}px`;
-
-        searchOptions.forEach(option => {
-            let optionElement = document.createElement('div');
-            optionElement.textContent = option.name;
-            optionElement.style.padding = '5px';
-            optionElement.onclick = function() {
-                let searchUrl = `https://www.google.com/search?q=${encodeURIComponent(selectedText + option.suffix)}`;
-                window.open(searchUrl, '_blank');
-                document.body.removeChild(searchMenu);
-            };
-            searchMenu.appendChild(optionElement);
-        });
-
-        document.body.appendChild(searchMenu);
-    }
-
-    // Lắng nghe phím tắt Ctrl + Shift + F để mở giao diện
-    document.addEventListener('keydown', function(event) {
-        if (event.ctrlKey && event.shiftKey && event.key === 'F') {
-            showSettingsUI();
-        }
-    });
-
-    // Hiển thị menu tùy chọn tìm kiếm khi click chuột phải
-    document.addEventListener('contextmenu', function(event) {
-        let selectedText = window.getSelection().toString().trim();
-        let searchMenu = document.getElementById('custom-search-menu');
-
-        // Xóa menu cũ nếu tồn tại
-        if (searchMenu) {
-            document.body.removeChild(searchMenu);
-        }
-
-        if (selectedText) {
-            // Hiển thị menu tại vị trí chuột
-            createContextMenu(selectedText, event.pageX, event.pageY);
-            event.preventDefault(); // Ngăn menu chuột phải mặc định
-        }
-    });
-
-    // Ẩn menu khi click bất kỳ nơi nào khác
-    document.addEventListener('click', function() {
-        let searchMenu = document.getElementById('custom-search-menu');
-        if (searchMenu) {
-            document.body.removeChild(searchMenu);
-        }
-    });
 })();
