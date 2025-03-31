@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Auto Fit youtube for Mobile
+// @name         Auto Fit YouTube for Mobile - Enhanced
 // @namespace    http://tampermonkey.net/
-// @version      0.4
-// @description  Adjust website layout for mobile screens and hide recommended channels
+// @version      0.5
+// @description  Adjust website layout for mobile screens and fix text overflow issues
 // @author       Your Name
 // @match        *://*.youtube.com/*
 // @grant        none
@@ -40,17 +40,27 @@
         });
     }
 
-    // Function to remove the "Recommended channels" section
-    function removeRecommendedChannels() {
-        const recommendedSection = document.querySelector('#secondary #related'); // Adjust selector for specific YouTube layout
+    // Function to fix text overflow in the recommended section
+    function fixTextOverflow() {
+        const recommendedSection = document.querySelector('#secondary #related');
         if (recommendedSection) {
-            recommendedSection.style.display = 'none';
+            recommendedSection.style.display = 'block';
+            recommendedSection.style.overflowX = 'hidden';
+            recommendedSection.style.width = '100%';
+            recommendedSection.style.wordWrap = 'break-word';
+            const textElements = recommendedSection.querySelectorAll('*');
+            textElements.forEach((el) => {
+                el.style.boxSizing = 'border-box';
+                el.style.maxWidth = '100%';
+                el.style.wordWrap = 'break-word';
+                el.style.whiteSpace = 'normal';
+            });
         }
     }
 
     // Run functions on page load
     window.addEventListener('load', () => {
         fitWebsiteForMobile();
-        removeRecommendedChannels();
+        fixTextOverflow();
     });
 })();
