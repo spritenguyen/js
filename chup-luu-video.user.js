@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Capture and Save Video Helper with Domain Manager
+// @name         Optimized Capture and Save Video Helper
 // @namespace    https://example.com
-// @version      1.3
-// @description  Adds buttons to capture screenshots, save video, and manage domains.
+// @version      1.4
+// @description  Adds buttons to capture screenshots, save video, and manage active domains efficiently.
 // @author       YourName
 // @match        *://*/*
 // @grant        GM_setValue
@@ -13,13 +13,20 @@
 (function() {
     'use strict';
 
-    // Get current domain
-    const currentDomain = window.location.hostname;
+    // Initialize the domain list with default domain "google.com" if not already set
+    const defaultDomains = ["google.com"];
+    const savedDomains = GM_getValue("domains", []);
+    if (savedDomains.length === 0) {
+        GM_setValue("domains", defaultDomains);
+    }
     const domainList = GM_getValue("domains", []);
 
-    // Check if the current domain is in the list
+    // Get the current domain
+    const currentDomain = window.location.hostname;
+
+    // Check if the current domain is in the active list
     if (!domainList.includes(currentDomain)) {
-        return; // Stop execution if domain is not in the list
+        return; // Stop execution if the domain is not in the list
     }
 
     // Create buttons for screenshot and video saving
@@ -98,13 +105,18 @@
     captureButton.addEventListener('click', () => {
         const video = document.querySelector('video');
         if (video) {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const screenshot = canvas.toDataURL('image/png');
-            GM_download(screenshot, 'screenshot.png');
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const screenshot = canvas.toDataURL('image/png');
+                GM_download(screenshot, `screenshot_${Date.now()}.png`);
+                alert('Screenshot captured successfully!');
+            } catch (error) {
+                alert('Failed to capture screenshot. Error: ' + error.message);
+            }
         } else {
             alert('No video found on the page!');
         }
@@ -117,24 +129,29 @@
     saveVideoButton.addEventListener('click', () => {
         const video = document.querySelector('video');
         if (video) {
-            if (!recording) {
-                const stream = video.captureStream();
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = (event) => {
-                    recordedChunks.push(event.data);
-                };
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                    GM_download(URL.createObjectURL(blob), 'recorded_video.webm');
-                    recordedChunks = [];
-                };
-                mediaRecorder.start();
-                recording = true;
-                saveVideoButton.innerText = "Stop Saving Video";
-            } else {
-                mediaRecorder.stop();
-                recording = false;
-                saveVideoButton.innerText = "Start Saving Video";
+            try {
+                if (!recording) {
+                    const stream = video.captureStream();
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = (event) => {
+                        recordedChunks.push(event.data);
+                    };
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                        GM_download(URL.createObjectURL(blob), `video_${Date.now()}.webm`);
+                        recordedChunks = [];
+                        alert('Video saved successfully!');
+                    };
+                    mediaRecorder.start();
+                    recording = true;
+                    saveVideoButton.innerText = "Stop Saving Video";
+                } else {
+                    mediaRecorder.stop();
+                    recording = false;
+                    saveVideoButton.innerText = "Start Saving Video";
+                }
+            } catch (error) {
+                alert('Failed to save video. Error: ' + error.message);
             }
         } else {
             alert('No video found on the page!');
