@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Capture and Save Video Helper with Domain Manager
 // @namespace    https://example.com
-// @version      1.2
+// @version      1.3
 // @description  Adds buttons to capture screenshots, save video, and manage domains.
 // @author       YourName
 // @match        *://*/*
@@ -35,6 +35,7 @@
     toggleDomainButton.innerText = "Manage Domains";
     styleButton(toggleDomainButton, "90px");
 
+    // Append buttons to body
     document.body.appendChild(captureButton);
     document.body.appendChild(saveVideoButton);
     document.body.appendChild(toggleDomainButton);
