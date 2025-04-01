@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Capture and Save Video Helper with Domain Manager
 // @namespace    https://example.com
-// @version      1.1
+// @version      1.2
 // @description  Adds buttons to capture screenshots, save video, and manage domains.
 // @author       YourName
-// @match        *://*.google.com/*
+// @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_download
@@ -12,6 +12,15 @@
 
 (function() {
     'use strict';
+
+    // Get current domain
+    const currentDomain = window.location.hostname;
+    const domainList = GM_getValue("domains", []);
+
+    // Check if the current domain is in the list
+    if (!domainList.includes(currentDomain)) {
+        return; // Stop execution if domain is not in the list
+    }
 
     // Create buttons for screenshot and video saving
     const captureButton = document.createElement('button');
@@ -60,7 +69,6 @@
     });
 
     // Add domain functionality
-    const domainList = GM_getValue("domains", []);
     addDomainButton.addEventListener('click', () => {
         const domain = domainInput.value.trim();
         if (domain && !domainList.includes(domain)) {
@@ -68,6 +76,7 @@
             GM_setValue("domains", domainList);
             updateDomainListDisplay();
             domainInput.value = "";
+            alert(`Domain "${domain}" has been added.`);
         }
     });
 
