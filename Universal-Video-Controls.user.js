@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Universal Video Controls (Pro Optimized)
+// @name         Universal Video Controls with Domain Manager
 // @namespace    http://tampermonkey.net/
-// @version      2.5.0
-// @description  Điều khiển video HTML5 với hiệu suất cao, giao diện hiện đại và tính năng quay màn hình, hỗ trợ mọi thiết bị và kích thước màn hình.
+// @version      3.0.0
+// @description  Điều khiển video HTML5 và quản lý tên miền thông qua giao diện người dùng.
 // @author       Bạn
 // @match        *://*/*
 // @grant        none
@@ -11,29 +11,74 @@
 (function () {
     'use strict';
 
+    // Lưu/đọc danh sách tên miền từ localStorage
+    const DOMAIN_STORAGE_KEY = 'custom_domains';
+    const getDomains = () => JSON.parse(localStorage.getItem(DOMAIN_STORAGE_KEY) || '[]');
+    const saveDomains = (domains) => localStorage.setItem(DOMAIN_STORAGE_KEY, JSON.stringify(domains));
+
     /**
-     * Tạo nút với các thuộc tính cần thiết
-     * @param {string} label - Nhãn nút
-     * @param {function} action - Hành động khi nhấn nút
-     * @returns {HTMLButtonElement} Nút đã tạo
+     * Tạo giao diện quản lý tên miền
      */
-    const createButton = (label, action) => {
-        const button = document.createElement('button');
-        Object.assign(button.style, {
-            flex: '1 1 auto',
-            minWidth: '80px',
+    const createDomainManager = () => {
+        const manager = document.createElement('div');
+        Object.assign(manager.style, {
+            position: 'fixed',
+            top: '10px',
+            right: '10px',
+            background: '#fff',
+            border: '1px solid #ccc',
             padding: '10px',
+            zIndex: '10000',
+            borderRadius: '10px',
+            fontFamily: 'Arial, sans-serif',
             fontSize: '12px',
-            color: '#fff',
-            background: 'rgba(255, 255, 255, 0.2)',
-            border: '1px solid #fff',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            textAlign: 'center',
+            width: '250px',
         });
-        button.innerText = label;
-        button.onclick = action;
-        return button;
+        manager.innerHTML = `
+            <h3 style="margin: 0; font-size: 14px; text-align: center;">Quản lý Tên miền</h3>
+            <input id="domain-input" type="text" placeholder="Nhập tên miền..." style="width: 100%; padding: 5px; margin-top: 10px;"/>
+            <button id="add-domain" style="width: 100%; margin-top: 5px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Thêm</button>
+            <ul id="domain-list" style="list-style: none; padding: 0; margin-top: 10px; max-height: 150px; overflow-y: auto; border-top: 1px solid #ccc;"></ul>
+        `;
+
+        document.body.appendChild(manager);
+
+        const domainInput = manager.querySelector('#domain-input');
+        const addDomainButton = manager.querySelector('#add-domain');
+        const domainList = manager.querySelector('#domain-list');
+
+        const updateDomainList = () => {
+            const domains = getDomains();
+            domainList.innerHTML = '';
+            domains.forEach((domain, index) => {
+                const li = document.createElement('li');
+                li.textContent = domain;
+                li.style = 'margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;';
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'X';
+                deleteButton.style = 'color: white; background: red; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;';
+                deleteButton.onclick = () => {
+                    domains.splice(index, 1);
+                    saveDomains(domains);
+                    updateDomainList();
+                };
+                li.appendChild(deleteButton);
+                domainList.appendChild(li);
+            });
+        };
+
+        addDomainButton.onclick = () => {
+            const domain = domainInput.value.trim();
+            if (domain && !getDomains().includes(domain)) {
+                const domains = getDomains();
+                domains.push(domain);
+                saveDomains(domains);
+                domainInput.value = '';
+                updateDomainList();
+            }
+        };
+
+        updateDomainList();
     };
 
     /**
@@ -51,43 +96,34 @@
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
-            flexWrap: 'wrap',
             gap: '5px',
             justifyContent: 'center',
             background: 'rgba(0, 0, 0, 0.7)',
             borderRadius: '10px',
             padding: '5px',
             zIndex: '9999',
-            maxWidth: '90%',
             opacity: '0',
-            pointerEvents: 'none', // Ngăn thao tác khi ẩn
-            transition: 'opacity 0.3s, pointer-events 0s linear 0.3s', // Đồng bộ opacity và pointer-events
+            pointerEvents: 'none',
+            transition: 'opacity 0.3s, pointer-events 0s linear 0.3s',
         });
 
-        // Biến hỗ trợ ghi video
-        let mediaRecorder;
-        let chunks = [];
-        const toggleRecording = (e) => {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-                chunks = [];
-                const stream = video.captureStream();
-                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) chunks.push(event.data);
-                };
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'video/webm' });
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = 'recording.webm';
-                    link.click();
-                };
-                mediaRecorder.start();
-                e.target.innerText = '⏹ Stop Recording';
-            } else {
-                mediaRecorder.stop();
-                e.target.innerText = '📹 Start Recording';
-            }
+        const createButton = (label, action) => {
+            const button = document.createElement('button');
+            Object.assign(button.style, {
+                flex: '1 1 auto',
+                minWidth: '80px',
+                padding: '10px',
+                fontSize: '12px',
+                color: '#fff',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid #fff',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                textAlign: 'center',
+            });
+            button.innerText = label;
+            button.onclick = action;
+            return button;
         };
 
         // Danh sách các nút
@@ -98,32 +134,19 @@
             createButton('➖ Speed -0.5', () => (video.playbackRate = Math.max(0.5, video.playbackRate - 0.5))),
             createButton('🔄 Reset Speed', () => (video.playbackRate = 1)),
             createButton('➕ Speed +0.5', () => (video.playbackRate = Math.min(16, video.playbackRate + 0.5))),
-            createButton('📸 Screenshot', () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                const link = document.createElement('a');
-                link.download = 'screenshot.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            }),
-            createButton('📹 Start Recording', toggleRecording),
         ];
 
-        // Thêm nút vào container
         buttons.forEach((button) => container.appendChild(button));
         video.parentElement.style.position = 'relative';
         video.parentElement.appendChild(container);
 
-        // Hiện/ẩn container khi tương tác
         const showControls = () => {
             container.style.opacity = '1';
-            container.style.pointerEvents = 'auto'; // Kích hoạt thao tác khi hiển thị
+            container.style.pointerEvents = 'auto';
             clearTimeout(video._hideTimeout);
             video._hideTimeout = setTimeout(() => {
                 container.style.opacity = '0';
-                container.style.pointerEvents = 'none'; // Ngăn thao tác khi ẩn
+                container.style.pointerEvents = 'none';
             }, 3000);
         };
 
@@ -131,10 +154,14 @@
         video.addEventListener('touchstart', showControls);
     };
 
-    // Theo dõi video mới được thêm vào DOM
-    const observer = new MutationObserver(() => {
-        document.querySelectorAll('video').forEach(enhanceVideo);
-    });
+    // Kiểm tra xem tên miền hiện tại có hợp lệ không
+    const currentDomain = window.location.hostname;
+    if (getDomains().some(domain => currentDomain.includes(domain))) {
+        const observer = new MutationObserver(() => {
+            document.querySelectorAll('video').forEach        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    // Tạo giao diện quản lý tên miền
+    createDomainManager();
 })();
