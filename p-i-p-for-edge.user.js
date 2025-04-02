@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Video PiP Mode
 // @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Add a button to enable Picture-in-Picture mode for HTML5 videos.
+// @version      1.3
+// @description  Add a button to enable Picture-in-Picture mode for the currently playing HTML5 video.
 // @author       Your Name
 // @match        *://*/*
 // @grant        none
@@ -31,17 +31,26 @@
         pipButton.style.zIndex = '10000';
         document.body.appendChild(pipButton);
 
-        // Thêm sự kiện để chuyển video sang chế độ PiP
+        // Thêm sự kiện để chuyển video đang phát sang chế độ PiP
         pipButton.addEventListener('click', async () => {
-            const video = document.querySelector('video'); // Chọn video đầu tiên trên trang
-            if (video) {
+            const videos = document.querySelectorAll('video'); // Tìm tất cả video trên trang
+            let activeVideo = null;
+
+            // Kiểm tra video nào đang phát
+            videos.forEach(video => {
+                if (!video.paused && !video.ended && video.readyState > 2) {
+                    activeVideo = video; // Lấy video đang phát
+                }
+            });
+
+            if (activeVideo) {
                 try {
-                    await video.requestPictureInPicture(); // Kích hoạt chế độ PiP
+                    await activeVideo.requestPictureInPicture(); // Kích hoạt chế độ PiP cho video đang phát
                 } catch (err) {
                     console.error('Không thể bật chế độ PiP:', err);
                 }
             } else {
-                alert('Không tìm thấy video trên trang!');
+                alert('Không tìm thấy video đang phát trên trang!');
             }
         });
     }
