@@ -1,4 +1,12 @@
-// ==UserScript== // @name Video PiP Button // @namespace http://tampermonkey.net/ // @version 1.0 // @description Thêm nút PiP cho video trên trang web // @include *://*/* // @grant none // ==/UserScript== (function() { 'use strict';
+// ==UserScript== 
+// @name Video PiP Button 
+// @namespace http://tampermonkey.net/ 
+// @version 1.0 
+// @description Thêm nút PiP cho video trên trang web 
+// @include *://*/* 
+// @grant none 
+// ==/UserScript== 
+(function() { 'use strict';
 // Tạo nút PiP const createPiPButton = (video) =>
 { const button = document.createElement('button');
 button.innerText = 'PiP';
