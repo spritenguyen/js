@@ -1,58 +1,48 @@
 // ==UserScript==
-// @name         Video PiP Button
+// @name         Video PiP Mode
 // @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  Add a Picture-in-Picture (PiP) button to videos on webpages
-// @include      *://*/*
+// @version      1.2
+// @description  Add a button to enable Picture-in-Picture mode for HTML5 videos.
+// @author       Your Name
+// @match        *://*/*
 // @grant        none
 // ==/UserScript==
 
-(function () {
+(function() {
     'use strict';
 
-    // Function to create the PiP button
-    const createPiPButton = (video) => {
-        const button = document.createElement('button');
-        button.innerText = 'PiP';
-        button.style.position = 'absolute';
-        button.style.top = '10px';
-        button.style.right = '10px';
-        button.style.zIndex = '1000';
-        button.style.backgroundColor = 'white';
-        button.style.border = '1px solid black';
-        button.style.padding = '5px';
-        button.style.cursor = 'pointer'; // Added for better user experience
-        button.onclick = async () => {
-            try {
-                if (document.pictureInPictureElement) {
-                    await document.exitPictureInPicture();
-                } else {
-                    await video.requestPictureInPicture();
+    // Kiểm tra xem có video HTML5 nào trên trang không
+    const checkForVideo = () => document.querySelector('video') !== null;
+
+    if (checkForVideo()) {
+        // Tạo nút PiP
+        const pipButton = document.createElement('button');
+        pipButton.innerText = 'PiP Mode';
+        pipButton.style.position = 'fixed';
+        pipButton.style.top = '100px';
+        pipButton.style.right = '20px';
+        pipButton.style.padding = '10px 15px';
+        pipButton.style.fontSize = '16px';
+        pipButton.style.backgroundColor = '#007bff';
+        pipButton.style.color = 'white';
+        pipButton.style.border = 'none';
+        pipButton.style.borderRadius = '5px';
+        pipButton.style.cursor = 'pointer';
+        pipButton.style.zIndex = '10000';
+        document.body.appendChild(pipButton);
+
+        // Thêm sự kiện để chuyển video sang chế độ PiP
+        pipButton.addEventListener('click', async () => {
+            const video = document.querySelector('video'); // Chọn video đầu tiên trên trang
+            if (video) {
+                try {
+                    await video.requestPictureInPicture(); // Kích hoạt chế độ PiP
+                } catch (err) {
+                    console.error('Không thể bật chế độ PiP:', err);
                 }
-            } catch (error) {
-                console.error('Error toggling PiP mode:', error);
+            } else {
+                alert('Không tìm thấy video trên trang!');
             }
-        };
-
-        video.parentElement.style.position = 'relative'; // Ensures button positioning
-        video.parentElement.appendChild(button);
-    };
-
-    // Function to find videos and add PiP buttons
-    const addPiPButtonsToVideos = () => {
-        const videos = document.querySelectorAll('video:not([data-pip-added])');
-        videos.forEach((video) => {
-            video.setAttribute('data-pip-added', 'true'); // Avoid duplicate buttons
-            createPiPButton(video);
         });
-    };
-
-    // Add buttons to existing videos
-    addPiPButtonsToVideos();
-
-    // Add buttons to new videos loaded dynamically
-    const observer = new MutationObserver(() => {
-        addPiPButtonsToVideos();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    }
 })();
