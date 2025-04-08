@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name         Chặn Video Shorts trên YouTube Di Động
+// @name         Xóa Hoàn Toàn Video Shorts trên YouTube
 // @namespace    http://tampermonkey.net/
-// @version      0.3
-// @description  Ẩn các video Shorts trên m.youtube.com.
+// @version      0.4
+// @description  Ẩn hoàn toàn video Shorts, logo và chữ liên quan trên cả trang web và di động của YouTube.
 // @author       Bạn
+// @match        https://www.youtube.com/*
 // @match        https://m.youtube.com/*
 // @grant        none
 // ==/UserScript==
@@ -11,13 +12,22 @@
 (function() {
     'use strict';
 
-    // Hàm để ẩn các video Shorts
+    // Hàm để ẩn các video Shorts và các thành phần liên quan
     function hideShorts() {
-        const shortsSections = document.querySelectorAll('a[href*="/shorts"]'); // Nhận diện đường dẫn chứa "/shorts"
-        shortsSections.forEach(section => {
-            const parentElement = section.closest('div');
+        // Ẩn các video Shorts
+        const shortsLinks = document.querySelectorAll('a[href*="/shorts"]');
+        shortsLinks.forEach(link => {
+            const parentElement = link.closest('div');
             if (parentElement) {
                 parentElement.style.display = 'none';
+            }
+        });
+
+        // Ẩn logo và các tiêu đề liên quan đến Shorts
+        const shortsTextElements = document.querySelectorAll('span, h2, div');
+        shortsTextElements.forEach(element => {
+            if (element.textContent.includes('Shorts')) {
+                element.style.display = 'none';
             }
         });
     }
