@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         Chặn Video Shorts trên YouTube Di Động
+// @name         Chặn Video Shorts trên YouTube
 // @namespace    http://tampermonkey.net/
-// @version      0.3
-// @description  Ẩn các video Shorts trên m.youtube.com.
-// @author       Bạn
-// @match        https://m.youtube.com/*
+// @version      0.3.1
+// @description  Ẩn các video Shorts trên youtube
+// @author       
+// @match        *://*.youtube.com/*
 // @grant        none
 // ==/UserScript==
 
