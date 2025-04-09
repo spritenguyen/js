@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Font Remover for MSN
+// @name         Inject Custom Styles for MSN
 // @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  Remove custom fonts on msn.com
+// @version      1.2
+// @description  Inject custom styles to override fonts on msn.com
 // @author       You
 // @match        *://www.msn.com/*
 // @grant        none
@@ -11,21 +11,17 @@
 (function() {
     'use strict';
 
-    // Hàm thay đổi font trên tất cả các phần tử
-    const removeCustomFonts = () => {
-        document.querySelectorAll('*').forEach(el => {
-            el.style.fontFamily = 'inherit'; // Đặt font về mặc định
-        });
-    };
+    // CSS tùy chỉnh để loại bỏ hoặc thay đổi font
+    const customCSS = `
+        * {
+            font-family: Arial !important; /* Thay đổi font sang Arial */
+        }
+    `;
 
-    // Thực hiện lần đầu khi trang được tải
-    removeCustomFonts();
+    // Tạo một thẻ <style> và thêm CSS vào
+    const styleElement = document.createElement('style');
+    styleElement.textContent = customCSS;
 
-    // Quan sát các thay đổi DOM để áp dụng lại nếu có phần tử mới xuất hiện
-    const observer = new MutationObserver(() => {
-        removeCustomFonts();
-    });
-
-    // Bắt đầu quan sát toàn bộ body của trang
-    observer.observe(document.body, { childList: true, subtree: true });
+    // Chèn thẻ <style> vào phần <head> của trang web
+    document.head.appendChild(styleElement);
 })();
