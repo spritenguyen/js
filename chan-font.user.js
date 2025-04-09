@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Inject Custom Styles for MSN
+// @name         Block Font Downloads
 // @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Inject custom styles to override fonts on msn.com
+// @version      1.0
+// @description  Block all font downloads on web pages
 // @author       You
 // @match        *://www.msn.com/*
 // @grant        none
@@ -11,17 +11,13 @@
 (function() {
     'use strict';
 
-    // CSS tùy chỉnh để loại bỏ hoặc thay đổi font
-    const customCSS = `
-        * {
-            font-family: Arial !important; /* Thay đổi font sang Arial */
+    // Chặn các yêu cầu tải font
+    const blockFonts = (event) => {
+        const url = event.target.src || event.target.href;
+        if (url && url.includes('.woff') || url.includes('.ttf') || url.includes('.otf')) {
+            console.log('Blocked font:', url);
+            event.preventDefault();
         }
-    `;
+    };
 
-    // Tạo một thẻ <style> và thêm CSS vào
-    const styleElement = document.createElement('style');
-    styleElement.textContent = customCSS;
-
-    // Chèn thẻ <style> vào phần <head> của trang web
-    document.head.appendChild(styleElement);
-})();
+};
