@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Chặn Font Chữ Hoàn Chỉnh
+// @name         Chặn Font Chữ
 // @namespace    http://tampermonkey.net/
-// @version      0.2
-// @description  Chặn tải font từ máy chủ và thay thế font
+// @version      0.1
+// @description  Chặn font chữ trên trang web
 // @author       Bạn
 // @match        https://msn.com/*
 // @grant        none
@@ -10,20 +10,13 @@
 
 (function() {
     'use strict';
-
-    // Loại bỏ các liên kết liên quan đến font chữ
-    const links = document.querySelectorAll('link[rel="stylesheet"], style');
-    links.forEach(link => {
-        if (link.href && link.href.includes('font')) {
-            link.parentNode.removeChild(link);
-        }
-    });
-
-    // Thay thế font bằng font mặc định của hệ thống
     const style = document.createElement('style');
     style.innerHTML = `
+        @font-face {
+            font-family: 'Arial'; /* Thay thế font mặc định */
+        }
         * {
-            font-family: 'Arial', sans-serif !important; /* Thay đổi font mặc định */
+            font-family: 'Arial', sans-serif !important;
         }
     `;
     document.head.appendChild(style);
