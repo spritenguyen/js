@@ -4,7 +4,7 @@
 // @version      0.1
 // @description  Chặn font chữ trên trang web
 // @author       Bạn
-// @match        https://msn.com/*
+// @match        *://*.msn.com/*
 // @grant        none
 // ==/UserScript==
 
