@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Mobile Data Notifier
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Hiển thị thông báo khi sử dụng dữ liệu di động để cảnh báo người dùng.
+// @version      1.1
+// @description  Hiển thị thông báo làm mờ khi sử dụng dữ liệu di động để cảnh báo người dùng.
 // @author       YourName
 // @match        *://*/*
 // @grant        none
@@ -35,6 +35,7 @@
             notification.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.2)';
             notification.style.fontSize = '14px';
             notification.style.zIndex = '9999';
+            notification.style.opacity = '0.5'; // Làm mờ 50%
             notification.innerText = 'Bạn đang sử dụng dữ liệu di động!';
             document.body.appendChild(notification);
         }
