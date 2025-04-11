@@ -1,54 +1,68 @@
 // ==UserScript==
-// @name         Chặn Tải Hình Ảnh Trên Mạng Di Động (V3)
+// @name         Mobile Data Notifier
 // @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Ngăn tải hình ảnh nếu sử dụng dữ liệu di động và hiển thị thông báo gọn trong khung ảnh
-// @author       Nguyen
+// @version      1.0
+// @description  Hiển thị thông báo khi sử dụng dữ liệu di động để cảnh báo người dùng.
+// @author       YourName
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
-    // Hàm kiểm tra kết nối mạng có phải là di động không
-    function isMobileConnection() {
-        if (navigator.connection && navigator.connection.type) {
-            return navigator.connection.type === 'cellular';
+    const isMobileData = () => {
+        if (navigator.connection) {
+            // Kiểm tra loại kết nối hoặc hiệu quả kết nối
+            return navigator.connection.type === 'cellular' || ['2g', '3g', '4g'].includes(navigator.connection.effectiveType);
         }
+        // Nếu trình duyệt không hỗ trợ navigator.connection
         return false;
-    }
+    };
 
-    if (isMobileConnection()) {
-        // Lấy tất cả hình ảnh trên trang
-        const images = document.querySelectorAll('img');
+    const showNotification = () => {
+        let notification = document.getElementById('mobile-data-notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'mobile-data-notification';
+            notification.style.position = 'fixed';
+            notification.style.bottom = '10px';
+            notification.style.right = '10px';
+            notification.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            notification.style.color = 'white';
+            notification.style.padding = '10px 20px';
+            notification.style.borderRadius = '5px';
+            notification.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.2)';
+            notification.style.fontSize = '14px';
+            notification.style.zIndex = '9999';
+            notification.innerText = 'Bạn đang sử dụng dữ liệu di động!';
+            document.body.appendChild(notification);
+        }
+    };
 
-        // Chặn tải hình ảnh và thay thế bằng thông báo
-        images.forEach(img => {
-            // Lưu kích thước ban đầu của ảnh
-            const width = img.offsetWidth;
-            const height = img.offsetHeight;
+    const hideNotification = () => {
+        const notification = document.getElementById('mobile-data-notification');
+        if (notification) {
+            document.body.removeChild(notification);
+        }
+    };
 
-            // Tạo khung thông báo
-            const placeholder = document.createElement('div');
-            placeholder.textContent = 'Hình ảnh đã bị chặn do sử dụng mạng di động';
-            placeholder.style.cssText = `
-                width: ${width}px;
-                height: ${height}px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-                text-align: center;
-                color: red;
-                font-size: calc(${Math.min(width, height)} / 10); /* Kích thước chữ thay đổi phù hợp với khung */
-                border: 1px solid #ccc;
-                background-color: #f9f9f9;
-                box-sizing: border-box;
-            `;
+    const checkConnection = () => {
+        if (isMobileData()) {
+            showNotification();
+        } else {
+            hideNotification();
+        }
+    };
 
-            // Thay thế ảnh bằng khung thông báo
-            img.parentNode.replaceChild(placeholder, img);
-        });
+    // Kiểm tra kết nối ban đầu
+    checkConnection();
+
+    // Nghe sự kiện thay đổi kết nối nếu trình duyệt hỗ trợ
+    if (navigator.connection && navigator.connection.addEventListener) {
+        navigator.connection.addEventListener('change', checkConnection);
+    } else {
+        // Cài đặt kiểm tra định kỳ (fallback cho trình duyệt không hỗ trợ)
+        setInterval(checkConnection, 5000);
     }
 })();
