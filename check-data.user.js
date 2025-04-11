@@ -1,64 +1,68 @@
 // ==UserScript==
-// @name         Kiểm tra mạng dữ liệu (Cập nhật)
-// @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Hiển thị thông báo mạng: Dữ liệu di động hoặc Wi-Fi
-// @author       Bạn
-// @match        *://*/*
-// @grant        none
+// @name        Phát hiện loại mạng (Tối ưu hóa Android)
+// @namespace   Violentmonkey Scripts
+// @match       *://*/*
+// @grant       none
+// @version     1.3
+// @author      Your Name
+// @description Hiển thị loại mạng đang dùng (tối ưu hóa cho Android)
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // Tạo banner thông báo
-    const banner = document.createElement('div');
-    banner.id = 'network-info-banner';
-    banner.style.position = 'fixed';
-    banner.style.top = '0';
-    banner.style.left = '0';
-    banner.style.width = '100%';
-    banner.style.zIndex = '9999';
-    banner.style.backgroundColor = '#000'; // Màu nền
-    banner.style.color = '#fff'; // Màu chữ
-    banner.style.textAlign = 'center';
-    banner.style.fontSize = '16px';
-    banner.style.opacity = '0.5'; // Độ mờ 50%
-    banner.style.padding = '10px';
-    banner.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
-    banner.style.pointerEvents = 'none'; // Không làm cản trở
-
-    document.body.appendChild(banner);
-
-    // Phương pháp phát hiện mạng
-    function checkNetworkType() {
-        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        let networkType = 'Không thể xác định loại mạng'; // Thông báo mặc định
-
-        if (connection) {
-            const effectiveType = connection.effectiveType;
-            if (effectiveType.includes('2g') || effectiveType.includes('3g') || effectiveType.includes('4g')) {
-                networkType = 'Dùng dữ liệu di động';
-            } else if (effectiveType === 'wifi' || connection.type === 'wifi') {
-                networkType = 'Dùng Wi-Fi';
-            } else {
-                networkType = `Loại mạng khác: ${effectiveType}`;
+    function kiemTraLoaiMang() {
+        if (navigator.connection && navigator.connection.effectiveType) {
+            const loaiMang = navigator.connection.effectiveType;
+            if (loaiMang.includes('wifi')) {
+                hienThiThongBao('Bạn đang dùng Wi-Fi.');
+                return;
+            } else if (loaiMang.includes('cellular')) {
+                hienThiThongBao('Bạn đang dùng mạng di động.');
+                return;
             }
-        } else {
-            // Cách dự phòng: Kiểm tra qua hostname (chỉ hiệu quả trong một số trường hợp)
-            const isWiFi = location.hostname === '192.168.1.1' || location.hostname.startsWith('192.168.');
-            networkType = isWiFi ? 'Dùng Wi-Fi' : 'Dùng dữ liệu di động';
         }
-
-        banner.textContent = networkType;
+        kiemTraTocDoMang();
     }
 
-    // Lắng nghe thay đổi mạng
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (connection) {
-        connection.addEventListener('change', checkNetworkType);
+    function kiemTraTocDoMang() {
+        var startTime, endTime;
+        var downloadSize = 512 * 1024; // 0.5MB, giảm kích thước tải xuống
+
+        startTime = (new Date()).getTime();
+        fetch('data:application/octet-stream;base64,' + 'A'.repeat(downloadSize))
+            .then(function(response) {
+                endTime = (new Date()).getTime();
+                var duration = (endTime - startTime) / 1000;
+                var speed = downloadSize / duration;
+                var nguongTocDo = 500000; // 0.5MB/s, giảm ngưỡng tốc độ
+                if (speed > nguongTocDo) {
+                    hienThiThongBao('Có thể bạn đang dùng Wi-Fi (Tốc độ cao).');
+                } else {
+                    hienThiThongBao('Có thể bạn đang dùng mạng di động (Tốc độ thấp).');
+                }
+            })
+            .catch(function() {
+                hienThiThongBao('Không thể xác định mạng.');
+            });
     }
 
-    // Kiểm tra ngay khi khởi chạy
-    checkNetworkType();
+    function hienThiThongBao(thongBao) {
+        const thongBaoDiv = document.createElement('div');
+        thongBaoDiv.textContent = thongBao;
+        thongBaoDiv.style.position = 'fixed';
+        thongBaoDiv.style.bottom = '10px'; // Điều chỉnh vị trí
+        thongBaoDiv.style.left = '10px';
+        thongBaoDiv.style.background = 'rgba(0, 0, 0, 0.8)'; // Tăng độ đậm
+        thongBaoDiv.style.color = 'white';
+        thongBaoDiv.style.padding = '8px'; // Giảm padding
+        thongBaoDiv.style.borderRadius = '4px'; // Giảm bo tròn
+        thongBaoDiv.style.fontSize = '14px'; // Giảm kích thước chữ
+        thongBaoDiv.style.zIndex = '9999';
+        document.body.appendChild(thongBaoDiv);
+        setTimeout(() => {
+            thongBaoDiv.remove();
+        }, 4000); // Giảm thời gian hiển thị
+    }
+    kiemTraLoaiMang();
 })();
