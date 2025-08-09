@@ -1,160 +1,308 @@
 // ==UserScript==
-// @name         Tùy chỉnh font + lưu + UI gọn + bật/tắt từng tùy chọn
+// @name         Tùy chỉnh font + lưu + UI gọn + bật/tắt + nhập/xuất
 // @namespace    http://tampermonkey.net/
-// @version      1.4
-// @description  Tùy chỉnh font, màu, nền, viền chữ và lưu theo tên miền với giao diện gọn gàng và bật/tắt từng tùy chọn
-// @author       
+// @version      1.6
+// @description  Tùy chỉnh font, màu, nền, viền chữ. Neo ô chọn phần tử (sticky), UI nổi khối. Lưu theo tên miền. Nhập/Xuất cấu hình JSON nhanh chóng.
+// @author       Copilot
 // @match        *://*/*
 // @grant        GM_addStyle
 // ==/UserScript==
 
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    const domain = location.hostname;
-    const storageKey = `fontStyle_${domain}`;
+  const domain = location.hostname;
+  const storageKey = `fontStyle_${domain}`;
+  const styleElId = `cpl-style-${domain}`;
 
-    // Nút bật/tắt UI
-    const toggleBtn = document.createElement('button');
-    toggleBtn.textContent = '🎨 Font Tool';
-    toggleBtn.style = `
-        position:fixed;
-        top:10px;
-        right:10px;
-        z-index:9999;
-        background:#0078d4;
-        color:#fff;
-        border:none;
-        padding:6px 10px;
-        border-radius:5px;
-        cursor:pointer;
-        font-size:14px;
-    `;
-    document.body.appendChild(toggleBtn);
-
-    // Giao diện điều khiển
-    const panel = document.createElement('div');
-    panel.style = `
-        position:fixed;
-        top:50px;
-        right:10px;
-        z-index:9999;
-        background:#fff;
-        border:1px solid #ccc;
-        padding:10px;
-        font-family:sans-serif;
-        width:270px;
-        max-height:300px;
-        overflow-y:auto;
-        display:none;
-        box-shadow:0 2px 8px rgba(0,0,0,0.2);
-        border-radius:6px;
-    `;
-    panel.innerHTML = `
-        <h4 style="margin-top:0;">Tùy chỉnh font</h4>
-        <label>Phần tử (p, .class, #id):</label><br>
-        <input type="text" id="selector" style="width:100%;"><br><br>
-
-        <label><input type="checkbox" id="enableFontSize"> Cỡ chữ (px):</label><br>
-        <input type="number" id="fontsize" style="width:100%;" value="16"><br><br>
-
-        <label><input type="checkbox" id="enableFontColor"> Màu chữ:</label><br>
-        <input type="color" id="fontcolor" style="width:100%;"><br><br>
-
-        <label><input type="checkbox" id="enableBgColor"> Nền chữ:</label><br>
-        <input type="color" id="bgcolor" style="width:100%;"><br><br>
-
-        <label><input type="checkbox" id="enableTextStroke"> Viền chữ (ví dụ: 1px black):</label><br>
-        <input type="text" id="textstroke" style="width:100%;" placeholder="1px black"><br><br>
-
-        <label><input type="checkbox" id="enableFontName"> Tên font (Google Fonts):</label><br>
-        <input type="text" id="fontname" style="width:100%;" placeholder="Roboto"><br><br>
-
-        <label><input type="checkbox" id="saveDomain"> Lưu cho tên miền này</label><br><br>
-
-        <button id="applyStyle" style="width:100%;">Áp dụng</button>
-    `;
-    document.body.appendChild(panel);
-
-    toggleBtn.addEventListener('click', () => {
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    });
-
-    function loadGoogleFont(fontName) {
-        if (!fontName) return;
-        const link = document.createElement('link');
-        link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, '+')}&display=swap`;
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
+  // ========== Styles (UI đẹp + nổi khối + sticky) ==========
+  GM_addStyle(`
+    :root {
+      --cpl-accent: #0078d4;
+      --cpl-accent-2: #0a64a0;
+      --cpl-bg: #f5f7fb;
+      --cpl-panel-bg: #ffffffcc;
+      --cpl-text: #1a1f36;
+      --cpl-border: #e6e9ef;
+      --cpl-shadow-1: 0 6px 18px rgba(16,24,40,.12);
+      --cpl-shadow-2: 0 2px 6px rgba(16,24,40,.08);
     }
-
-    function applyStyle(config) {
-        if (!config.selector) return;
-
-        let style = `${config.selector} {`;
-
-        if (config.enableFontSize) {
-            style += `font-size: ${config.fontSize}px !important;`;
-        }
-        if (config.enableFontColor) {
-            style += `color: ${config.fontColor} !important;`;
-        }
-        if (config.enableBgColor) {
-            style += `background-color: ${config.bgColor} !important;`;
-        }
-        if (config.enableFontName) {
-            style += `font-family: '${config.fontName}', sans-serif !important;`;
-            loadGoogleFont(config.fontName);
-        }
-        if (config.enableTextStroke) {
-            style += `-webkit-text-stroke: ${config.textStroke} !important;`;
-        }
-
-        style += `}`;
-        GM_addStyle(style);
+    .cpl-toggle-btn {
+      position: fixed; top: 12px; right: 12px;
+      z-index: 2147483647;
+      background: var(--cpl-accent); color: #fff; border: none;
+      padding: 8px 12px; border-radius: 10px; cursor: pointer;
+      font: 600 13px/1.2 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      box-shadow: var(--cpl-shadow-2);
+      transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
     }
+    .cpl-toggle-btn:hover { background: var(--cpl-accent-2); box-shadow: var(--cpl-shadow-1); transform: translateY(-1px); }
+    .cpl-toggle-btn:active { transform: translateY(0); }
 
-    // Tải cấu hình nếu có
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-        const config = JSON.parse(saved);
-        applyStyle(config);
-        document.getElementById('selector').value = config.selector;
-        document.getElementById('fontsize').value = config.fontSize;
-        document.getElementById('fontcolor').value = config.fontColor;
-        document.getElementById('bgcolor').value = config.bgColor;
-        document.getElementById('textstroke').value = config.textStroke;
-        document.getElementById('fontname').value = config.fontName;
-        document.getElementById('enableFontSize').checked = config.enableFontSize;
-        document.getElementById('enableFontColor').checked = config.enableFontColor;
-        document.getElementById('enableBgColor').checked = config.enableBgColor;
-        document.getElementById('enableTextStroke').checked = config.enableTextStroke;
-        document.getElementById('enableFontName').checked = config.enableFontName;
-        document.getElementById('saveDomain').checked = true;
+    .cpl-panel {
+      position: fixed; top: 56px; right: 12px;
+      z-index: 2147483647;
+      width: 300px; max-height: 440px;
+      background: var(--cpl-panel-bg);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--cpl-border);
+      box-shadow: var(--cpl-shadow-1);
+      border-radius: 14px; overflow: hidden; display: none;
+      color: var(--cpl-text);
+      font: 500 13px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
+    .cpl-panel-inner {
+      padding: 12px; max-height: 440px; overflow-y: auto;
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
+    }
+    .cpl-title { margin: 0 0 8px 0; font-size: 14px; font-weight: 700; letter-spacing: .1px; }
 
-    document.getElementById('applyStyle').addEventListener('click', () => {
-        const config = {
-            selector: document.getElementById('selector').value.trim(),
-            fontSize: document.getElementById('fontsize').value.trim(),
-            fontColor: document.getElementById('fontcolor').value.trim(),
-            bgColor: document.getElementById('bgcolor').value.trim(),
-            textStroke: document.getElementById('textstroke').value.trim(),
-            fontName: document.getElementById('fontname').value.trim(),
-            enableFontSize: document.getElementById('enableFontSize').checked,
-            enableFontColor: document.getElementById('enableFontColor').checked,
-            enableBgColor: document.getElementById('enableBgColor').checked,
-            enableTextStroke: document.getElementById('enableTextStroke').checked,
-            enableFontName: document.getElementById('enableFontName').checked
-        };
+    /* Sticky block: label trên, input dưới, neo đỉnh panel */
+    .cpl-sticky {
+      position: sticky; top: 0; z-index: 2;
+      background: #ffffffee;
+      border: 1px solid var(--cpl-border); border-radius: 10px;
+      padding: 10px; margin: 0 0 10px 0;
+      box-shadow: 0 3px 8px rgba(16,24,40,.06);
+    }
+    .cpl-label { display: block; font-weight: 700; margin-bottom: 6px; }
 
-        applyStyle(config);
+    .cpl-input, .cpl-input[type="number"], .cpl-input[type="text"], .cpl-input[type="color"] {
+      width: 100%; box-sizing: border-box;
+      padding: 8px 10px; border-radius: 10px;
+      border: 1px solid var(--cpl-border); background: #fff; color: var(--cpl-text);
+      outline: none; box-shadow: inset 0 1px 0 rgba(16,24,40,.03);
+      transition: border .2s ease, box-shadow .2s ease;
+    }
+    .cpl-input:focus { border-color: var(--cpl-accent); box-shadow: 0 0 0 3px rgba(0,120,212,.12); }
 
-        if (document.getElementById('saveDomain').checked) {
-            localStorage.setItem(storageKey, JSON.stringify(config));
-        } else {
-            localStorage.removeItem(storageKey);
-        }
-    });
-  
+    .cpl-section {
+      border: 1px solid var(--cpl-border); border-radius: 12px;
+      padding: 10px; margin-bottom: 10px; background: #fff;
+      box-shadow: 0 2px 10px rgba(16,24,40,.06);
+    }
+    .cpl-checkline { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; user-select: none; }
+    .cpl-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .cpl-muted { color: #4b5565; font-weight: 600; }
+
+    .cpl-btn {
+      width: 100%; color: #fff; border: none; padding: 10px 12px; border-radius: 12px;
+      font-weight: 700; cursor: pointer; box-shadow: var(--cpl-shadow-2);
+      transition: transform .08s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .cpl-btn:hover { filter: brightness(1.03); box-shadow: var(--cpl-shadow-1); transform: translateY(-1px); }
+    .cpl-btn:active { transform: translateY(0); }
+    .cpl-btn-primary { background: linear-gradient(180deg, #0b84e5, #0078d4); }
+    .cpl-btn-green { background: linear-gradient(180deg, #18b25e, #0ea44e); }
+    .cpl-btn-orange { background: linear-gradient(180deg, #ffa552, #ff8c00); }
+
+    .cpl-actions { display: flex; gap: 6px; margin-bottom: 10px; }
+    .cpl-panel-inner::-webkit-scrollbar { width: 10px; }
+    .cpl-panel-inner::-webkit-scrollbar-track { background: transparent; }
+    .cpl-panel-inner::-webkit-scrollbar-thumb {
+      background: #d9dee7; border-radius: 10px; border: 2px solid transparent; background-clip: content-box;
+    }
+  `);
+
+  // ========== Toggle button ==========
+  const toggleBtn = document.createElement('button');
+  toggleBtn.textContent = '🎨 Font Tool';
+  toggleBtn.className = 'cpl-toggle-btn';
+  document.body.appendChild(toggleBtn);
+
+  // ========== Panel ==========
+  const panel = document.createElement('div');
+  panel.className = 'cpl-panel';
+  panel.innerHTML = `
+    <div class="cpl-panel-inner">
+      <h4 class="cpl-title">Tùy chỉnh font</h4>
+
+      <!-- Sticky selector -->
+      <div class="cpl-sticky">
+        <label for="selector" class="cpl-label">Phần tử (p, .class, #id):</label>
+        <input type="text" id="selector" class="cpl-input" placeholder="p, .class, #id">
+      </div>
+
+      <div class="cpl-section">
+        <div class="cpl-grid">
+          <div>
+            <label class="cpl-checkline">
+              <input type="checkbox" id="enableFontSize">
+              <span class="cpl-muted">Cỡ chữ (px)</span>
+            </label>
+            <input type="number" id="fontsize" class="cpl-input" value="16" min="1">
+          </div>
+
+          <div>
+            <label class="cpl-checkline">
+              <input type="checkbox" id="enableFontColor">
+              <span class="cpl-muted">Màu chữ</span>
+            </label>
+            <input type="color" id="fontcolor" class="cpl-input" value="#000000">
+          </div>
+
+          <div>
+            <label class="cpl-checkline">
+              <input type="checkbox" id="enableBgColor">
+              <span class="cpl-muted">Nền chữ</span>
+            </label>
+            <input type="color" id="bgcolor" class="cpl-input" value="#ffffff">
+          </div>
+
+          <div>
+            <label class="cpl-checkline">
+              <input type="checkbox" id="enableTextStroke">
+              <span class="cpl-muted">Viền chữ (ví dụ: 1px black)</span>
+            </label>
+            <input type="text" id="textstroke" class="cpl-input" placeholder="1px black">
+          </div>
+
+          <div>
+            <label class="cpl-checkline">
+              <input type="checkbox" id="enableFontName">
+              <span class="cpl-muted">Tên font (Google Fonts)</span>
+            </label>
+            <input type="text" id="fontname" class="cpl-input" placeholder="Roboto">
+          </div>
+
+          <div class="cpl-checkline" style="margin-top:4px;">
+            <input type="checkbox" id="saveDomain" checked>
+            <span class="cpl-muted">Lưu cho tên miền này</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cpl-actions">
+        <button id="exportConfig" class="cpl-btn cpl-btn-green">📤 Xuất</button>
+        <button id="importConfig" class="cpl-btn cpl-btn-orange">📥 Nhập</button>
+      </div>
+
+      <button id="applyStyle" class="cpl-btn cpl-btn-primary">Áp dụng</button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  // ========== Helpers ==========
+  const $ = (id) => document.getElementById(id);
+
+  function ensureStyleEl() {
+    let el = document.getElementById(styleElId);
+    if (!el) {
+      el = document.createElement('style');
+      el.id = styleElId;
+      document.head.appendChild(el);
+    }
+    return el;
+  }
+
+  function loadGoogleFont(fontName) {
+    if (!fontName) return;
+    const id = `cpl-gf-${fontName.replace(/\s+/g, '-')}`;
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName).replace(/%20/g, '+')}&display=swap`;
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  }
+
+  function buildCss(config) {
+    if (!config.selector) return '';
+    let css = `${config.selector} {`;
+    if (config.enableFontSize && config.fontSize) css += `font-size: ${config.fontSize}px !important;`;
+    if (config.enableFontColor && config.fontColor) css += `color: ${config.fontColor} !important;`;
+    if (config.enableBgColor && config.bgColor) css += `background-color: ${config.bgColor} !important;`;
+    if (config.enableFontName && config.fontName) css += `font-family: '${config.fontName}', sans-serif !important;`;
+    if (config.enableTextStroke && config.textStroke) css += `-webkit-text-stroke: ${config.textStroke} !important;`;
+    css += `}`;
+    return css;
+  }
+
+  function applyStyle(config) {
+    if (!config || !config.selector) return;
+    const el = ensureStyleEl();
+    el.textContent = buildCss(config);
+    if (config.enableFontName && config.fontName) loadGoogleFont(config.fontName);
+  }
+
+  function getUIConfig() {
+    const fontSizeVal = parseInt($('fontsize').value, 10);
+    return {
+      selector: $('selector').value.trim(),
+      fontSize: Number.isFinite(fontSizeVal) ? fontSizeVal : 16,
+      fontColor: $('fontcolor').value.trim() || '#000000',
+      bgColor: $('bgcolor').value.trim() || '#ffffff',
+      textStroke: $('textstroke').value.trim(),
+      fontName: $('fontname').value.trim(),
+      enableFontSize: $('enableFontSize').checked,
+      enableFontColor: $('enableFontColor').checked,
+      enableBgColor: $('enableBgColor').checked,
+      enableTextStroke: $('enableTextStroke').checked,
+      enableFontName: $('enableFontName').checked
+    };
+  }
+
+  function setUIFromConfig(config) {
+    $('selector').value = config.selector || '';
+    $('fontsize').value = config.fontSize ?? 16;
+    $('fontcolor').value = config.fontColor || '#000000';
+    $('bgcolor').value = config.bgColor || '#ffffff';
+    $('textstroke').value = config.textStroke || '';
+    $('fontname').value = config.fontName || '';
+    $('enableFontSize').checked = !!config.enableFontSize;
+    $('enableFontColor').checked = !!config.enableFontColor;
+    $('enableBgColor').checked = !!config.enableBgColor;
+    $('enableTextStroke').checked = !!config.enableTextStroke;
+    $('enableFontName').checked = !!config.enableFontName;
+  }
+
+  // ========== Events ==========
+  toggleBtn.addEventListener('click', () => {
+    panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
+  });
+
+  $('applyStyle').addEventListener('click', () => {
+    const config = getUIConfig();
+    applyStyle(config);
+    if ($('saveDomain').checked) {
+      localStorage.setItem(storageKey, JSON.stringify(config));
+    } else {
+      localStorage.removeItem(storageKey);
+    }
+  });
+
+  $('exportConfig').addEventListener('click', () => {
+    // Xuất cấu hình hiện tại trên UI (kể cả chưa lưu)
+    const config = getUIConfig();
+    const json = JSON.stringify(config);
+    prompt('Sao chép JSON cấu hình:', json);
+  });
+
+  $('importConfig').addEventListener('click', () => {
+    const json = prompt('Dán JSON cấu hình vào đây:');
+    if (!json) return;
+    try {
+      const config = JSON.parse(json);
+      setUIFromConfig(config);
+      applyStyle(config);
+      $('saveDomain').checked = true;
+      localStorage.setItem(storageKey, JSON.stringify(config));
+      alert('Đã nhập và áp dụng cấu hình.');
+    } catch (e) {
+      alert('JSON không hợp lệ!');
+    }
+  });
+
+  // ========== Load saved config ==========
+  const saved = localStorage.getItem(storageKey);
+  if (saved) {
+    try {
+      const config = JSON.parse(saved);
+      setUIFromConfig(config);
+      applyStyle(config);
+      $('saveDomain').checked = true;
+    } catch (e) {
+      // Nếu lỗi parse, bỏ qua
+    }
+  }
 })();
