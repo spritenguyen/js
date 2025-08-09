@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Tùy chỉnh font + nhiều selector + UI nổi khối + xuất/nhập cấu hình
-// @namespace    http://tampermonkey.net/
+// @namespace    
 // @version      2.1
 // @description  Tùy chỉnh font, màu, nền, viền, tên font; lưu nhiều rule theo selector cho từng domain; UI nổi khối; quản lý bật/tắt/sửa/xóa; xuất/nhập cấu hình JSON (copy/paste, file)
 // @author       
