@@ -1,419 +1,160 @@
 // ==UserScript==
-// @name         Font Manager Simple UI (Enhanced + Font Family Presets)
+// @name         Tùy chỉnh font + lưu + UI gọn + bật/tắt từng tùy chọn
 // @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Quản lý cỡ chữ, font-style, và font-family theo hostname; UI cố định; danh sách cuộn
-// @author
+// @version      1.4
+// @description  Tùy chỉnh font, màu, nền, viền chữ và lưu theo tên miền với giao diện gọn gàng và bật/tắt từng tùy chọn
+// @author       
 // @match        *://*/*
-// @grant        GM_getValue
-// @grant        GM_setValue
+// @grant        GM_addStyle
 // ==/UserScript==
 
-(function () {
-  'use strict';
+(function() {
+    'use strict';
 
-  const KEY = 'fontSizes'; // Giữ key cũ để tương thích
-  const host = location.hostname;
-  let db = GM_getValue(KEY, {}); // { [hostname]: string | { size, style, family } }
+    const domain = location.hostname;
+    const storageKey = `fontStyle_${domain}`;
 
-  // ---------- Helpers ----------
-  function getPrefsFor(v) {
-    if (!v) return null;
-    if (typeof v === 'string') return { size: v };
-    if (typeof v === 'object') {
-      return {
-        size: v.size || '',
-        style: v.style || '',
-        family: v.family || ''
-      };
-    }
-    return null;
-  }
-
-  function normalizeSize(val) {
-    const v = String(val || '').trim();
-    if (!v) return '';
-    return /^\d+(\.\d+)?$/.test(v) ? v + 'px' : v;
-  }
-
-  function normalizeFontStyle(val) {
-    const v = String(val || '').trim().toLowerCase();
-    return ['normal', 'italic', 'oblique'].includes(v) ? v : '';
-  }
-
-  function normalizeFamily(val) {
-    return String(val || '').trim();
-  }
-
-  // ---------- Áp dụng style toàn trang ----------
-  let globalStyleEl = null;
-  function ensureGlobalStyleEl() {
-    if (!globalStyleEl) {
-      globalStyleEl = document.createElement('style');
-      globalStyleEl.id = 'fm_global_style';
-      document.head.appendChild(globalStyleEl);
-    }
-    return globalStyleEl;
-  }
-
-  function buildCSSProps(prefs, includeLineHeight = true) {
-    const props = [];
-    if (prefs.size) {
-      props.push(`font-size: ${prefs.size} !important`);
-      if (includeLineHeight) props.push(`line-height: 1.4 !important`);
-    }
-    if (prefs.style) props.push(`font-style: ${prefs.style} !important`);
-    if (prefs.family) props.push(`font-family: ${prefs.family} !important`);
-    return props.join('; ') + (props.length ? ';' : '');
-  }
-
-  function applyFontPrefs(prefs) {
-    if (!prefs) return;
-    const s = ensureGlobalStyleEl();
-    const baseProps = buildCSSProps(prefs, true);
-    const pseudoProps = buildCSSProps(prefs, false);
-    s.textContent = `
-      *, *::before, *::after { ${baseProps} }
-      input::placeholder, textarea::placeholder { ${pseudoProps} }
+    // Nút bật/tắt UI
+    const toggleBtn = document.createElement('button');
+    toggleBtn.textContent = '🎨 Font Tool';
+    toggleBtn.style = `
+        position:fixed;
+        top:10px;
+        right:10px;
+        z-index:9999;
+        background:#0078d4;
+        color:#fff;
+        border:none;
+        padding:6px 10px;
+        border-radius:5px;
+        cursor:pointer;
+        font-size:14px;
     `;
-  }
+    document.body.appendChild(toggleBtn);
 
-  const currentPrefs = getPrefsFor(db[host]);
-  if (currentPrefs) applyFontPrefs(currentPrefs);
+    // Giao diện điều khiển
+    const panel = document.createElement('div');
+    panel.style = `
+        position:fixed;
+        top:50px;
+        right:10px;
+        z-index:9999;
+        background:#fff;
+        border:1px solid #ccc;
+        padding:10px;
+        font-family:sans-serif;
+        width:270px;
+        max-height:300px;
+        overflow-y:auto;
+        display:none;
+        box-shadow:0 2px 8px rgba(0,0,0,0.2);
+        border-radius:6px;
+    `;
+    panel.innerHTML = `
+        <h4 style="margin-top:0;">Tùy chỉnh font</h4>
+        <label>Phần tử (p, .class, #id):</label><br>
+        <input type="text" id="selector" style="width:100%;"><br><br>
 
-  // ---------- UI với Shadow DOM để không bị ảnh hưởng bởi thay đổi font toàn trang ----------
-  function mountUI() {
-    const uiHost = document.createElement('div');
-    Object.assign(uiHost.style, {
-      position: 'fixed',
-      bottom: '16px',
-      right: '16px',
-      zIndex: '2147483647',
-      all: 'initial'
+        <label><input type="checkbox" id="enableFontSize"> Cỡ chữ (px):</label><br>
+        <input type="number" id="fontsize" style="width:100%;" value="16"><br><br>
+
+        <label><input type="checkbox" id="enableFontColor"> Màu chữ:</label><br>
+        <input type="color" id="fontcolor" style="width:100%;"><br><br>
+
+        <label><input type="checkbox" id="enableBgColor"> Nền chữ:</label><br>
+        <input type="color" id="bgcolor" style="width:100%;"><br><br>
+
+        <label><input type="checkbox" id="enableTextStroke"> Viền chữ (ví dụ: 1px black):</label><br>
+        <input type="text" id="textstroke" style="width:100%;" placeholder="1px black"><br><br>
+
+        <label><input type="checkbox" id="enableFontName"> Tên font (Google Fonts):</label><br>
+        <input type="text" id="fontname" style="width:100%;" placeholder="Roboto"><br><br>
+
+        <label><input type="checkbox" id="saveDomain"> Lưu cho tên miền này</label><br><br>
+
+        <button id="applyStyle" style="width:100%;">Áp dụng</button>
+    `;
+    document.body.appendChild(panel);
+
+    toggleBtn.addEventListener('click', () => {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
     });
-    document.documentElement.appendChild(uiHost);
 
-    const shadow = uiHost.attachShadow({ mode: 'open' });
+    function loadGoogleFont(fontName) {
+        if (!fontName) return;
+        const link = document.createElement('link');
+        link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, '+')}&display=swap`;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+    }
 
-    const style = document.createElement('style');
-    style.textContent = `
-      :host {
-        all: initial;
-        font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        color: #111;
-      }
-      * { box-sizing: border-box; }
-      .btn {
-        position: fixed;
-        bottom: 16px;
-        right: 16px;
-        padding: 8px 12px;
-        background: #007bff;
-        color: #fff;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 14px;
-      }
-      .panel {
-        position: fixed;
-        bottom: 64px;
-        right: 16px;
-        padding: 16px;
-        background: #f4f4f4;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,.3);
-        min-width: 340px;
-        display: none;
-        font-size: 14px;
-        color: #111;
-      }
-      .row { margin-top: 8px; }
-      input, select, button { font: inherit; color: inherit; }
-      input, select {
-        width: 100%;
-        padding: 6px 8px;
-        border: 1px solid #bbb;
-        border-radius: 6px;
-        background: #fff;
-      }
-      .btn-small {
-        margin-top: 6px;
-        padding: 6px 10px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        background: #eee;
-      }
-      .btn-primary { background: #007bff; color: #fff; }
-      .btn-danger { background: #dc3545; color: #fff; }
-      .label { font-weight: 600; }
-      ul {
-        padding-left: 18px;
-        margin: 6px 0 0 0;
-        list-style: disc;
-        max-height: 72px; /* ~3 items */
-        overflow-y: auto; /* thanh cuộn dọc nếu >3 */
-      }
-      li { margin: 2px 0; }
-      hr { margin: 10px 0; border: none; border-top: 1px solid #ddd; }
-      .hint { color: #666; font-size: 12px; }
-      .host { color: #007bff; font-weight: 700; }
-      .row-inline-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .row-inline-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-      .hidden { display: none; }
-    `;
-    shadow.appendChild(style);
+    function applyStyle(config) {
+        if (!config.selector) return;
 
-    const container = document.createElement('div');
-    container.innerHTML = `
-      <button id="btn" class="btn" title="Quản lý font">🅵 Font</button>
-      <div id="panel" class="panel" part="panel">
-        <div class="label">Quản lý cỡ & kiểu chữ cho: <span class="host">${host}</span></div>
+        let style = `${config.selector} {`;
 
-        <div class="row">
-          <div class="label">Cài đặt cho trang hiện tại</div>
-
-          <div class="row-inline-3">
-            <input id="fs_input" type="text" placeholder="cỡ chữ (vd: 18px, 1.2em)">
-            <select id="fs_style">
-              <option value="">font-style (giữ nguyên)</option>
-              <option value="normal">normal</option>
-              <option value="italic">italic</option>
-              <option value="oblique">oblique</option>
-            </select>
-            <select id="fs_family_select">
-              <option value="">font-family (giữ nguyên)</option>
-              <option value="Arial, sans-serif">Arial</option>
-              <option value="Helvetica, Arial, sans-serif">Helvetica</option>
-              <option value="'Times New Roman', serif">Times New Roman</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="Verdana, sans-serif">Verdana</option>
-              <option value="Tahoma, sans-serif">Tahoma</option>
-              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-              <option value="'Courier New', monospace">Courier New</option>
-              <option value="Consolas, 'Courier New', monospace">Consolas</option>
-              <option value="'Roboto', sans-serif">Roboto</option>
-              <option value="'Open Sans', sans-serif">Open Sans</option>
-              <option value="'Inter', sans-serif">Inter</option>
-              <option value="'Noto Sans', sans-serif">Noto Sans</option>
-              <option value="'Noto Serif', serif">Noto Serif</option>
-              <option value="'Source Sans Pro', sans-serif">Source Sans Pro</option>
-              <option value="'Montserrat', sans-serif">Montserrat</option>
-              <option value="'Lato', sans-serif">Lato</option>
-              <option value="'Fira Code', monospace">Fira Code</option>
-              <option value="custom">Tùy chỉnh...</option>
-            </select>
-          </div>
-
-          <div class="row">
-            <input id="fs_family_custom" class="hidden" type="text" placeholder='nhập font-family tuỳ chỉnh, vd: "Inter", Arial, sans-serif'>
-          </div>
-
-          <div class="row">
-            <button id="fs_save" class="btn-small btn-primary">💾 Lưu & áp dụng</button>
-            <button id="fs_delete" class="btn-small btn-danger">❌ Xoá</button>
-          </div>
-        </div>
-
-        <hr>
-
-        <div class="row">
-          <div class="label">Thêm thủ công</div>
-          <input id="fs_host" type="text" placeholder="hostname (vd: vnexpress.net)" class="row">
-          <div class="row-inline-3">
-            <input id="fs_value" type="text" placeholder="cỡ chữ (vd: 17px)">
-            <select id="fs_value_style">
-              <option value="">font-style</option>
-              <option value="normal">normal</option>
-              <option value="italic">italic</option>
-              <option value="oblique">oblique</option>
-            </select>
-            <select id="fs_value_family_select">
-              <option value="">font-family</option>
-              <option value="Arial, sans-serif">Arial</option>
-              <option value="Helvetica, Arial, sans-serif">Helvetica</option>
-              <option value="'Times New Roman', serif">Times New Roman</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="Verdana, sans-serif">Verdana</option>
-              <option value="Tahoma, sans-serif">Tahoma</option>
-              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-              <option value="'Courier New', monospace">Courier New</option>
-              <option value="Consolas, 'Courier New', monospace">Consolas</option>
-              <option value="'Roboto', sans-serif">Roboto</option>
-              <option value="'Open Sans', sans-serif">Open Sans</option>
-              <option value="'Inter', sans-serif">Inter</option>
-              <option value="'Noto Sans', sans-serif">Noto Sans</option>
-              <option value="'Noto Serif', serif">Noto Serif</option>
-              <option value="'Source Sans Pro', sans-serif">Source Sans Pro</option>
-              <option value="'Montserrat', sans-serif">Montserrat</option>
-              <option value="'Lato', sans-serif">Lato</option>
-              <option value="'Fira Code', monospace">Fira Code</option>
-              <option value="custom">Tùy chỉnh...</option>
-            </select>
-          </div>
-
-          <div class="row">
-            <input id="fs_value_family_custom" class="hidden" type="text" placeholder='font-family tuỳ chỉnh'>
-          </div>
-
-          <button id="fs_add" class="btn-small">➕ Thêm trang</button>
-          <div class="hint row">Mẹo: Nếu chỉ nhập số (vd: 18) sẽ tự hiểu là px.</div>
-        </div>
-
-        <hr>
-
-        <div class="label">Danh sách đã lưu</div>
-        <ul id="fs_list"></ul>
-      </div>
-    `;
-    shadow.appendChild(container);
-
-    // ---------- DOM helpers ----------
-    const $ = (id) => shadow.getElementById(id);
-    const btn = $('btn');
-    const panel = $('panel');
-
-    const fsFamilySelect = $('fs_family_select');
-    const fsFamilyCustom = $('fs_family_custom');
-    const fsValueFamilySelect = $('fs_value_family_select');
-    const fsValueFamilyCustom = $('fs_value_family_custom');
-
-    // Toggle hiện/ẩn input custom khi chọn "Tùy chỉnh..."
-    function setupFamilyToggle(selectEl, customInputEl) {
-      const update = () => {
-        if (selectEl.value === 'custom') {
-          customInputEl.classList.remove('hidden');
-          customInputEl.focus();
-        } else {
-          customInputEl.classList.add('hidden');
+        if (config.enableFontSize) {
+            style += `font-size: ${config.fontSize}px !important;`;
         }
-      };
-      selectEl.addEventListener('change', update);
-      update();
-    }
-    setupFamilyToggle(fsFamilySelect, fsFamilyCustom);
-    setupFamilyToggle(fsValueFamilySelect, fsValueFamilyCustom);
+        if (config.enableFontColor) {
+            style += `color: ${config.fontColor} !important;`;
+        }
+        if (config.enableBgColor) {
+            style += `background-color: ${config.bgColor} !important;`;
+        }
+        if (config.enableFontName) {
+            style += `font-family: '${config.fontName}', sans-serif !important;`;
+            loadGoogleFont(config.fontName);
+        }
+        if (config.enableTextStroke) {
+            style += `-webkit-text-stroke: ${config.textStroke} !important;`;
+        }
 
-    // Render list
-    function renderList() {
-      const ul = $('fs_list');
-      ul.innerHTML = '';
-      Object.entries(db).forEach(([k, v]) => {
-        const p = getPrefsFor(v) || {};
-        const parts = [];
-        if (p.size) parts.push(p.size);
-        if (p.style) parts.push(p.style);
-        if (p.family) parts.push(p.family);
-        const li = document.createElement('li');
-        li.textContent = `${k}: ${parts.join(' | ') || '(chưa đặt)'}`;
-        ul.appendChild(li);
-      });
+        style += `}`;
+        GM_addStyle(style);
     }
 
-    // Điền dữ liệu hiện tại
-    function fillCurrent() {
-      const p = getPrefsFor(db[host]) || {};
-      $('fs_input').value = p.size || '';
-      $('fs_style').value = p.style || '';
-
-      // font-family select + custom
-      const fam = p.family || '';
-      const options = Array.from(fsFamilySelect.options).map(o => o.value);
-      if (fam && options.includes(fam)) {
-        fsFamilySelect.value = fam;
-        fsFamilyCustom.value = '';
-      } else if (fam) {
-        fsFamilySelect.value = 'custom';
-        fsFamilyCustom.value = fam;
-      } else {
-        fsFamilySelect.value = '';
-        fsFamilyCustom.value = '';
-      }
-      // ensure toggle visibility
-      fsFamilySelect.dispatchEvent(new Event('change'));
+    // Tải cấu hình nếu có
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+        const config = JSON.parse(saved);
+        applyStyle(config);
+        document.getElementById('selector').value = config.selector;
+        document.getElementById('fontsize').value = config.fontSize;
+        document.getElementById('fontcolor').value = config.fontColor;
+        document.getElementById('bgcolor').value = config.bgColor;
+        document.getElementById('textstroke').value = config.textStroke;
+        document.getElementById('fontname').value = config.fontName;
+        document.getElementById('enableFontSize').checked = config.enableFontSize;
+        document.getElementById('enableFontColor').checked = config.enableFontColor;
+        document.getElementById('enableBgColor').checked = config.enableBgColor;
+        document.getElementById('enableTextStroke').checked = config.enableTextStroke;
+        document.getElementById('enableFontName').checked = config.enableFontName;
+        document.getElementById('saveDomain').checked = true;
     }
 
-    // Toggle panel
-    btn.addEventListener('click', () => {
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-      fillCurrent();
-      renderList();
+    document.getElementById('applyStyle').addEventListener('click', () => {
+        const config = {
+            selector: document.getElementById('selector').value.trim(),
+            fontSize: document.getElementById('fontsize').value.trim(),
+            fontColor: document.getElementById('fontcolor').value.trim(),
+            bgColor: document.getElementById('bgcolor').value.trim(),
+            textStroke: document.getElementById('textstroke').value.trim(),
+            fontName: document.getElementById('fontname').value.trim(),
+            enableFontSize: document.getElementById('enableFontSize').checked,
+            enableFontColor: document.getElementById('enableFontColor').checked,
+            enableBgColor: document.getElementById('enableBgColor').checked,
+            enableTextStroke: document.getElementById('enableTextStroke').checked,
+            enableFontName: document.getElementById('enableFontName').checked
+        };
+
+        applyStyle(config);
+
+        if (document.getElementById('saveDomain').checked) {
+            localStorage.setItem(storageKey, JSON.stringify(config));
+        } else {
+            localStorage.removeItem(storageKey);
+        }
     });
-
-    // Lưu & áp dụng cho host hiện tại
-    $('fs_save').onclick = () => {
-      const sizeVal = normalizeSize($('fs_input').value);
-      const styleVal = normalizeFontStyle($('fs_style').value);
-
-      let famVal = '';
-      if (fsFamilySelect.value === 'custom') {
-        famVal = normalizeFamily(fsFamilyCustom.value);
-      } else {
-        famVal = normalizeFamily(fsFamilySelect.value);
-      }
-
-      if (!sizeVal && !styleVal && !famVal) {
-        alert('Vui lòng nhập ít nhất một thuộc tính (cỡ chữ / font-style / font-family).');
-        return;
-      }
-      const newPrefs = {};
-      if (sizeVal) newPrefs.size = sizeVal;
-      if (styleVal) newPrefs.style = styleVal;
-      if (famVal) newPrefs.family = famVal;
-
-      db[host] = newPrefs;
-      GM_setValue(KEY, db);
-      applyFontPrefs(newPrefs);
-      renderList();
-    };
-
-    // Xoá cấu hình host hiện tại
-    $('fs_delete').onclick = () => {
-      delete db[host];
-      GM_setValue(KEY, db);
-      if (globalStyleEl) globalStyleEl.textContent = '';
-      location.reload();
-    };
-
-    // Thêm thủ công host khác
-    $('fs_add').onclick = () => {
-      let h = String($('fs_host').value || '').trim();
-      h = h.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]; // trích hostname
-
-      const v = normalizeSize($('fs_value').value);
-      const s = normalizeFontStyle($('fs_value_style').value);
-
-      let f = '';
-      if (fsValueFamilySelect.value === 'custom') {
-        f = normalizeFamily(fsValueFamilyCustom.value);
-      } else {
-        f = normalizeFamily(fsValueFamilySelect.value);
-      }
-
-      if (!h) return alert('Hostname chưa hợp lệ.');
-      if (!v && !s && !f) return alert('Vui lòng nhập cỡ chữ / font-style / font-family.');
-
-      const prefs = {};
-      if (v) prefs.size = v;
-      if (s) prefs.style = s;
-      if (f) prefs.family = f;
-
-      db[h] = prefs;
-      GM_setValue(KEY, db);
-      renderList();
-      if (h === host) applyFontPrefs(prefs);
-    };
-
-    // Khởi tạo
-    renderList();
-  }
-
-  if (document.body) {
-    mountUI();
-  } else {
-    document.addEventListener('DOMContentLoaded', mountUI, { once: true });
-  }
+  
 })();
