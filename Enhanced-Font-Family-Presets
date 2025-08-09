@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      2.1
 // @description  Tùy chỉnh font, màu, nền, viền, tên font; lưu nhiều rule theo selector cho từng domain; UI nổi khối; quản lý bật/tắt/sửa/xóa; xuất/nhập cấu hình JSON (copy/paste, file)
-// @author       Copilot
+// @author       
 // @match        *://*/*
 // @grant        GM_addStyle
 // ==/UserScript==
