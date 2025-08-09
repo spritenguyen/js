@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Font Manager Simple UI
-// @namespace    http://tampermonkey.net/
+// @namespace    
 // @version      1.0
 // @description  
 // @author       
