@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Stylus-lite per-domain CSS manager
-// @namespace    
-// @version      1.2.0
+// @name         Stylus-lite per-domain CSS manager (fixed load)
+// @namespace    https://nguyen-css-manager.example
+// @version      1.2.1
 // @description  Quản lý CSS tùy chỉnh cho từng tên miền: gõ CSS, bật/tắt, sửa/xóa, áp dụng ngay, lưu bền; UI có thể ẩn/hiện.
 // @match        *://*/*
 // @run-at       document-end
@@ -108,6 +108,8 @@
             <button class="sl-save">Lưu</button>
             <button class="sl-clear">Xóa nội dung ô CSS</button>
             <span class="sl-status"></span>
+            <button class="sl-export">Xuất</button>
+            <button class="sl-import">Nhập</button>
           </div>
         </div>
         <div class="sl-list">
@@ -303,24 +305,47 @@
         listEl.appendChild(row);
       });
     }
+// nhập xuất json
+    panel.querySelector('.sl-export').addEventListener('click', () => {
+      const data = JSON.stringify(styles, null, 2);
+      prompt('Copy dữ liệu CSS của domain này:', data);
+    });
 
+    panel.querySelector('.sl-import').addEventListener('click', () => {
+      const raw = prompt('Dán dữ liệu JSON vào đây:');
+      if (!raw) return;
+      try {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          styles = arr;
+          save();
+          reapplyEnabled();
+          renderList();
+          status('Đã nhập dữ liệu.');
+        } else {
+          alert('Dữ liệu không hợp lệ.');
+        }
+      } catch(e) {
+        alert('JSON lỗi: ' + e.message);
+      }
+    });
     saveBtn.addEventListener('click', () => {
       const name = (nameInput.value || '').trim();
       const css = cssTextarea.value || '';
       if (!css.trim()) { status('CSS trống.'); return; }
 
-      if (editingId) {
-        const item = styles.find(s => s.id === editingId);
-        if (item) {
-          item.name = name || item.name || 'Style';
-          item.css = css;
-          if (item.enabled) applyStyle(item);
-          save();
-          renderList();
-          status('Đã cập nhật.');
-        }
-        editingId = null;
+      // Tìm mục có tên trùng
+      const existingItem = styles.find(s => s.name === name);
+
+      if (existingItem) {
+        // Nếu tên trùng, cập nhật CSS
+        existingItem.css = css;
+        if (existingItem.enabled) applyStyle(existingItem);
+        save();
+        renderList();
+        status('Đã cập nhật CSS cho mục "' + name + '".');
       } else {
+        // Nếu tên khác, tạo mới
         const item = { id: uid(), name: name || `Style ${styles.length + 1}`, css, enabled: true };
         styles.push(item);
         applyStyle(item);
