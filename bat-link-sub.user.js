@@ -1,129 +1,123 @@
 // ==UserScript==
-// @name         bắt link sub; ẩn hiện bằng ctrl + alt + S
-// @namespace
-// @version      1.3
-// @description
-// @author
+// @name         Subtitle Sniffer Safe
+// @namespace    spritenguyen.subtitle.safe
+// @version      1.3.1
+// @description  Tìm link phụ đề an toàn (không hook fetch)
 // @match        *://*/*
-// @grant        none
+// @grant        GM_registerMenuCommand
+// @grant        GM_setValue
+// @grant        GM_getValue
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
-    const subtitleRegex = /\.(srt|vtt|ass)(\?|$)/i;
-    const foundSubs = new Set();
-    let subtitleBox;
+    const SUB_REGEX = /\.(srt|vtt|ass|ssa|sub)(\?|$)/i;
+    const found = new Set();
+    let enabled = GM_getValue('enabled', true);
+    let panel = null;
 
-    function createBox() {
-        const div = document.createElement('div');
-        div.id = 'subtitle-box';
-        div.style.position = 'fixed';
-        div.style.left = '10px';
-        div.style.top = '10px';
-        div.style.zIndex = 9999;
-        div.style.background = 'rgba(0,0,0,0.85)';
-        div.style.color = 'white';
-        div.style.padding = '10px';
-        div.style.borderRadius = '8px';
-        div.style.maxWidth = '360px';
-        div.style.fontSize = '14px';
-        div.style.fontFamily = 'monospace';
-        div.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
-        div.style.cursor = 'move';
-        div.innerHTML = '<b>📄 Phụ đề được phát hiện:</b><br>';
-        document.body.appendChild(div);
-        subtitleBox = div;
+    function createPanel() {
+        if (panel) return panel;
 
-        // Kéo bằng chuột
-        let isDragging = false, offsetX, offsetY;
-        div.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            offsetX = e.clientX - div.offsetLeft;
-            offsetY = e.clientY - div.offsetTop;
-            div.style.transition = 'none';
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                div.style.left = (e.clientX - offsetX) + 'px';
-                div.style.top = (e.clientY - offsetY) + 'px';
-            }
-        });
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+        panel = document.createElement('div');
+        panel.style.cssText = `
+            position:fixed;
+            bottom:15px;
+            right:15px;
+            z-index:999999;
+            background:rgba(0,0,0,0.85);
+            color:#fff;
+            padding:10px;
+            border-radius:8px;
+            font-size:13px;
+            max-width:350px;
+            max-height:50vh;
+            overflow:auto;
+            font-family:monospace;
+        `;
 
-        return div;
+        document.body.appendChild(panel);
+        return panel;
     }
 
-    function displaySubLink(url) {
-        if (foundSubs.has(url)) return;
-        foundSubs.add(url);
+    function addSubtitle(url) {
+        if (!enabled) return;
+        if (!SUB_REGEX.test(url)) return;
+        if (found.has(url)) return;
 
-        const box = subtitleBox || createBox();
+        found.add(url);
+        const box = createPanel();
+
+        const item = document.createElement('div');
+        item.style.marginBottom = '6px';
 
         const link = document.createElement('a');
         link.href = url;
-        link.textContent = url;
-        link.style.color = '#00ffff';
-        link.style.display = 'inline-block';
-        link.style.wordBreak = 'break-all';
-        link.style.marginBottom = '4px';
+        link.textContent = '📄 ' + url.split('/').pop();
         link.target = '_blank';
+        link.style.color = '#00ffff';
+        link.style.wordBreak = 'break-all';
 
-        const copyBtn = document.createElement('button');
-        copyBtn.textContent = '📋 Copy';
-        copyBtn.style.marginLeft = '6px';
-        copyBtn.style.background = '#444';
-        copyBtn.style.color = '#fff';
-        copyBtn.style.border = 'none';
-        copyBtn.style.padding = '2px 6px';
-        copyBtn.style.cursor = 'pointer';
-        copyBtn.style.borderRadius = '4px';
-        copyBtn.onclick = () => {
-            navigator.clipboard.writeText(url).then(() => {
-                copyBtn.textContent = '✅ Copied';
-                setTimeout(() => copyBtn.textContent = '📋 Copy', 1500);
-            });
-        };
+        const copy = document.createElement('button');
+        copy.textContent = 'Copy';
+        copy.style.marginLeft = '5px';
+        copy.onclick = () => navigator.clipboard.writeText(url);
 
-        const line = document.createElement('div');
-        line.style.marginBottom = '6px';
-        line.appendChild(link);
-        line.appendChild(copyBtn);
-        box.appendChild(line);
+        item.appendChild(link);
+        item.appendChild(copy);
+        box.appendChild(item);
     }
 
-    // Gắn vào fetch và XHR
-    const originalFetch = window.fetch;
-    window.fetch = function(...args) {
-        return originalFetch.apply(this, args).then(response => {
-            if (subtitleRegex.test(response.url)) displaySubLink(response.url);
-            return response;
+    // 1️⃣ Quét thẻ <track>
+    function scanTracks() {
+        document.querySelectorAll('track').forEach(track => {
+            if (track.src) addSubtitle(track.src);
         });
-    };
+    }
 
-    const originalXHR = window.XMLHttpRequest;
-    window.XMLHttpRequest = class extends originalXHR {
-        open(...args) {
-            this._url = args[1];
-            return super.open(...args);
-        }
-        send(...args) {
-            this.addEventListener('load', () => {
-                if (subtitleRegex.test(this._url)) displaySubLink(this._url);
-            });
-            return super.send(...args);
-        }
-    };
+    // 2️⃣ Quét performance entries (request đã load)
+    function scanPerformance() {
+        performance.getEntries().forEach(entry => {
+            if (entry.name) addSubtitle(entry.name);
+        });
+    }
 
-    // Phím tắt Ctrl + Alt + S
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 's') {
-            const box = document.getElementById('subtitle-box');
-            if (box) {
-                box.style.display = (box.style.display === 'none') ? 'block' : 'none';
-            }
-        }
+    // 3️⃣ Theo dõi DOM động
+    const observer = new MutationObserver(() => {
+        scanTracks();
     });
+
+    function startObserver() {
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    function stopObserver() {
+        observer.disconnect();
+    }
+
+    // ===== MENU =====
+
+    GM_registerMenuCommand('🔎 Toggle Script', () => {
+        enabled = !enabled;
+        GM_setValue('enabled', enabled);
+        alert('Subtitle Sniffer: ' + (enabled ? 'ON' : 'OFF'));
+    });
+
+    GM_registerMenuCommand('🗑 Clear List', () => {
+        found.clear();
+        if (panel) panel.innerHTML = '';
+    });
+
+    // ===== INIT =====
+
+    if (enabled) {
+        scanTracks();
+        scanPerformance();
+        startObserver();
+    }
+
 })();
