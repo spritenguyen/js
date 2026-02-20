@@ -1,53 +1,49 @@
 // ==UserScript==
-// @name        Yandex Image Search (Touch + Desktop)
+// @name        Yandex Image Search (Android Stable)
 // @namespace   spritenguyen.mobile.yandex
-// @version     3.1.0
-// @description Long-press (touch) or right-click/ctrl+click to search image on Yandex
+// @version     3.2.0
+// @description Long press image to search on Yandex (Android fixed)
 // @match       *://*/*
 // @grant       none
 // ==/UserScript==
+
 (function () {
   'use strict';
 
   let timer = null;
-  const LONG_PRESS = 600; // ms
+  const LONG_PRESS = 600;
 
   function openSearch(img) {
     const src = img.currentSrc || img.src;
     if (!src) return;
-    const yurl = 'https://yandex.com/images/search?rpt=imageview&url=' + encodeURIComponent(src);
-    window.open(yurl, '_blank');
+
+    const url = 'https://yandex.com/images/search?rpt=imageview&url=' 
+                + encodeURIComponent(src);
+
+    // dùng location thay vì window.open để tránh popup block
+    location.href = url;
   }
 
-  // Cancel timer and reset
   function cancel() {
     clearTimeout(timer);
     timer = null;
   }
 
-  // Pointer down (mouse/touch/stylus)
-  window.addEventListener('pointerdown', function (e) {
+  window.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+
     const img = e.target.closest('img');
     if (!img) return;
 
-    // Long press only: start timer
     timer = setTimeout(() => {
       openSearch(img);
       cancel();
     }, LONG_PRESS);
 
-  }, { passive: true });
+  }, { passive: false });
 
-  window.addEventListener('pointerup', cancel, { passive: true });
-  window.addEventListener('pointermove', cancel, { passive: true });
-  window.addEventListener('pointercancel', cancel, { passive: true });
-
-  // Fallback: right click or ctrl+click (desktop)
-  window.addEventListener('click', function (e) {
-    if (e.button === 2 || e.ctrlKey) {
-      const img = e.target.closest('img');
-      if (img) openSearch(img);
-    }
-  });
+  window.addEventListener('touchend', cancel);
+  window.addEventListener('touchmove', cancel);
+  window.addEventListener('touchcancel', cancel);
 
 })();
