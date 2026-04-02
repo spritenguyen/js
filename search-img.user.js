@@ -1,49 +1,45 @@
 // ==UserScript==
-// @name        Yandex Image Search (Android Stable)
-// @namespace   spritenguyen.mobile.yandex
-// @version     3.2.0
-// @description Long press image to search on Yandex (Android fixed)
-// @match       *://*/*
-// @grant       none
+
+// @name         Yandex Image Search (Android Perfect)
+
+// @namespace    spritenguyen.mobile.yandex
+
+// @version      3.2.1
+
+// @description  Long-press image to search on Yandex (stable, lightweight)
+
+// @match        http*://*/*
+
+// @grant        none
+
+// @run-at       document-start
+
 // ==/UserScript==
 
 (function () {
+
   'use strict';
 
-  let timer = null;
-  const LONG_PRESS = 600;
+  const YANDEX = 'https://yandex.com/images/search?rpt=imageview&url=';
 
-  function openSearch(img) {
-    const src = img.currentSrc || img.src;
-    if (!src) return;
-
-    const url = 'https://yandex.com/images/search?rpt=imageview&url=' 
-                + encodeURIComponent(src);
-
-    // dùng location thay vì window.open để tránh popup block
-    location.href = url;
-  }
-
-  function cancel() {
-    clearTimeout(timer);
-    timer = null;
-  }
-
-  window.addEventListener('touchstart', function (e) {
-    if (e.touches.length !== 1) return;
+  document.addEventListener('contextmenu', function (e) {
 
     const img = e.target.closest('img');
+
     if (!img) return;
 
-    timer = setTimeout(() => {
-      openSearch(img);
-      cancel();
-    }, LONG_PRESS);
+    const src = img.currentSrc || img.src;
 
-  }, { passive: false });
+    if (!src) return;
 
-  window.addEventListener('touchend', cancel);
-  window.addEventListener('touchmove', cancel);
-  window.addEventListener('touchcancel', cancel);
+    // bỏ ảnh base64 nhỏ, blob rác
+
+    if (src.startsWith('data:') || src.startsWith('blob:')) return;
+
+    e.preventDefault();
+
+    location.href = YANDEX + encodeURIComponent(src);
+
+  }, true); // capture để vượt site chặn
 
 })();
