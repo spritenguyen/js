@@ -335,4 +335,100 @@
                 const screenWidth = window.innerWidth || document.documentElement.clientWidth;
                 const scrubFactor = 60 / screenWidth;
 
-                let newTime =
+                let newTime = this.videoStartTime + (deltaX * scrubFactor);
+                newTime = Math.max(0, Math.min(this.video.duration || 0, newTime));
+
+                this.video.currentTime = newTime;
+
+                const minutes = Math.floor(newTime / 60);
+                const seconds = Math.floor(newTime % 60).toString().padStart(2, '0');
+                const symbol = deltaX > 0 ? '⏩' : '⏪';
+                this.showToast(`${symbol} ${minutes}:${seconds}`);
+            }
+        }
+
+        handleTouchEnd(e) {
+            if (this.isLocked) {
+                e.stopPropagation();
+                e.preventDefault();
+                return;
+            }
+
+            if (this.isSwiping) {
+                // Kết thúc vuốt tua
+                e.preventDefault();
+                e.stopPropagation();
+                this.isSwiping = false;
+                setTimeout(() => { this.toast.style.opacity = '0'; }, 500);
+            } else {
+                // Nếu không phải là vuốt, thì là 1 cú chạm đơn (Single Tap)
+                // -> Hiển thị UI các phím điều khiển
+                this.showUIControls();
+            }
+        }
+
+        // TÍNH NĂNG MỚI: Tự động xoay ngang khi Fullscreen
+        setupFullscreenAutoRotate() {
+            const handleFullscreenChange = () => {
+                const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+                if (isFullscreen) {
+                    // Đang vào chế độ toàn màn hình -> Ép xoay ngang
+                    try {
+                        if (screen.orientation && screen.orientation.lock) {
+                            screen.orientation.lock('landscape').catch(err => {
+                                console.log('Trình duyệt không hỗ trợ tự động xoay ngang:', err);
+                            });
+                        }
+                    } catch (e) { console.log(e); }
+                } else {
+                    // Thoát toàn màn hình -> Mở khóa xoay để về lại màn hình dọc
+                    try {
+                        if (screen.orientation && screen.orientation.unlock) {
+                            screen.orientation.unlock();
+                        }
+                    } catch (e) { console.log(e); }
+                }
+            };
+
+            // Lắng nghe sự kiện toàn màn hình trên toàn bộ document
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Dành cho iOS/Safari cũ
+        }
+    }
+
+    // --- BỘ QUAN SÁT TÌM KIẾM VIDEO TRÊN TRANG ---
+    function init() {
+        document.querySelectorAll('video').forEach(video => {
+            if (!video.dataset.gestureProcessed) {
+                new VideoGestureController(video);
+            }
+        });
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeName === 'VIDEO') {
+                        if (!node.dataset.gestureProcessed) {
+                            new VideoGestureController(node);
+                        }
+                    } else if (node.querySelectorAll) {
+                        node.querySelectorAll('video').forEach(video => {
+                            if (!video.dataset.gestureProcessed) {
+                                new VideoGestureController(video);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    init();
+
+})();
