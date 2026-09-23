@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Ultra Lite Font Engine – Multi Target (Tab & Color Edition)
+// @name         Ultra Lite Font Engine – Multi Target (Forum State Edition)
 // @namespace    ultra-font-clean
-// @version      3.0.0
-// @description  Engine font đa quy tắc theo tab, hỗ trợ tùy chỉnh font, scale, màu chữ độc lập cho từng đối tượng.
+// @version      3.1.0
+// @description  Engine font đa tab, hỗ trợ màu sắc và bảo toàn trạng thái bài đã đọc / chưa đọc / có cmt mới trên diễn đàn.
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
 // @run-at       document-start
@@ -31,8 +31,9 @@
         scale: 1.0,
         enableColor: false,
         color: "#38bdf8",
-        weight: 400,
+        weight: "auto", // Mặc định là auto để không phá hỏng độ đậm/nhạt của diễn đàn
         stroke: 0,
+        protectForumState: true, // Bảo tồn trạng thái đã đọc / có cmt mới
         protectIcons: true,
         protectCode: true,
         protectImages: true
@@ -43,7 +44,7 @@
     };
 
     // ============================================================
-    // STORAGE & MIGRATION
+    // STORAGE
     // ============================================================
 
     function save(config) {
@@ -61,21 +62,15 @@
             const data = JSON.parse(raw);
             if (!data || typeof data !== "object") return null;
 
-            // Tương thích ngược với cấu hình v2.x cũ
             if (!Array.isArray(data.rules)) {
                 return {
                     rules: [{
                         ...DEFAULT_RULE,
                         id: "rule_" + Date.now(),
-                        name: "Quy tắc 1",
                         selector: data.selector || DEFAULT_RULE.selector,
                         font: data.font || DEFAULT_RULE.font,
                         scale: data.scale || DEFAULT_RULE.scale,
-                        weight: data.weight || DEFAULT_RULE.weight,
-                        stroke: data.stroke || DEFAULT_RULE.stroke,
-                        protectIcons: data.protectIcons ?? true,
-                        protectCode: data.protectCode ?? true,
-                        protectImages: data.protectImages ?? true
+                        weight: data.weight || "auto"
                     }]
                 };
             }
@@ -97,12 +92,13 @@
     function loadFont(fontName, weight) {
         if (!fontName || systemFonts.includes(fontName)) return;
 
-        const cleanWeight = parseInt(weight, 10) || 400;
+        const numWeight = parseInt(weight, 10);
+        const cleanWeight = Number.isFinite(numWeight) ? numWeight : 400;
         const id = FONT_PREFIX + fontName.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_-]/g, "");
 
         if (document.getElementById(id)) return;
 
-        const weightsToLoad = Array.from(new Set([400, cleanWeight])).sort((a, b) => a - b).join(";");
+        const weightsToLoad = Array.from(new Set([400, 700, cleanWeight])).sort((a, b) => a - b).join(";");
         const link = document.createElement("link");
         link.id = id;
         link.rel = "stylesheet";
@@ -110,10 +106,6 @@
 
         (document.head || document.documentElement).appendChild(link);
     }
-
-    // ============================================================
-    // CSS ESCAPE & SELECTOR VALIDATION
-    // ============================================================
 
     function escapeCssString(value) {
         return String(value)
@@ -133,7 +125,7 @@
     }
 
     // ============================================================
-    // KÍCH THƯỚC GỐC & SCALE CACHE
+    // METRICS CACHE
     // ============================================================
 
     function getOrCacheMetrics(element) {
@@ -167,7 +159,7 @@
     }
 
     // ============================================================
-    // ENGINE ÁP DỤNG STYLESHEET
+    // STYLESHEET ENGINE (ĐÃ VÁ LỖI FORUM STATE)
     // ============================================================
 
     function ensureGlobalStyle() {
@@ -183,15 +175,41 @@
     font-family: var(--ultra-font) !important;
     font-size: var(--ultra-fs) !important;
     line-height: var(--ultra-lh) !important;
-    font-weight: var(--ultra-weight, 400) !important;
     -webkit-text-stroke: var(--ultra-stroke, 0) currentColor !important;
     letter-spacing: -0.01em !important;
+}
+
+/* Chỉ can thiệp font-weight nếu người dùng không để Auto */
+[${TARGET_ATTR}][data-ultra-weight]:not([data-ultra-weight="auto"]) {
+    font-weight: var(--ultra-weight) !important;
 }
 
 [${TARGET_ATTR}][data-ultra-color="true"] {
     color: var(--ultra-color) !important;
 }
 
+/* =========================================================
+   BẢO TOÀN TRẠNG THÁI FORUM (CHƯA ĐỌC / CÓ CMT MỚI VS ĐÃ ĐỌC)
+   ========================================================= */
+
+/* 1. BÀI CÓ CMT MỚI HOẶC CHƯA ĐỌC: Luôn in đậm và hiển thị rõ nét */
+.is-unread [${TARGET_ATTR}],
+[class*="unread"] [${TARGET_ATTR}],
+[${TARGET_ATTR}].is-unread,
+[${TARGET_ATTR}][class*="unread"] {
+    font-weight: 700 !important;
+    opacity: 1 !important;
+}
+
+/* 2. BÀI ĐÃ ĐỌC: Tự động làm nhạt màu nhẹ để phân biệt rõ ràng */
+.structItem:not(.is-unread) [${TARGET_ATTR}][data-ultra-color="true"],
+[class*="discussion-item"]:not(.is-unread) [${TARGET_ATTR}][data-ultra-color="true"],
+[class*="thread-item"]:not([class*="unread"]) [${TARGET_ATTR}][data-ultra-color="true"],
+tr:not(.is-unread):not([class*="unread"]) [${TARGET_ATTR}][data-ultra-color="true"] {
+    opacity: 0.65 !important;
+}
+
+/* BẢO VỆ ICONS & CODE */
 [${TARGET_ATTR}] [class*="fa-"],
 [${TARGET_ATTR}] [class*="fa--"],
 [${TARGET_ATTR}] [class*="material-icons"],
@@ -224,6 +242,7 @@
         for (const el of oldTargets) {
             el.removeAttribute(TARGET_ATTR);
             el.removeAttribute("data-ultra-color");
+            el.removeAttribute("data-ultra-weight");
             el.style.removeProperty("--ultra-font");
             el.style.removeProperty("--ultra-fs");
             el.style.removeProperty("--ultra-lh");
@@ -257,9 +276,18 @@
                 el.style.setProperty("--ultra-font", fontStack);
                 el.style.setProperty("--ultra-fs", `${targetFs}px`);
                 el.style.setProperty("--ultra-lh", `${metrics.lineHeightRatio}`);
-                el.style.setProperty("--ultra-weight", String(rule.weight || 400));
                 el.style.setProperty("--ultra-stroke", `${rule.stroke || 0}px`);
 
+                // Thiết lập Font Weight
+                if (rule.weight && rule.weight !== "auto") {
+                    el.setAttribute("data-ultra-weight", String(rule.weight));
+                    el.style.setProperty("--ultra-weight", String(rule.weight));
+                } else {
+                    el.setAttribute("data-ultra-weight", "auto");
+                    el.style.removeProperty("--ultra-weight");
+                }
+
+                // Thiết lập Màu sắc
                 if (rule.enableColor && rule.color) {
                     el.setAttribute("data-ultra-color", "true");
                     el.style.setProperty("--ultra-color", rule.color);
@@ -272,7 +300,7 @@
     }
 
     // ============================================================
-    // MODAL GIAO DIỆN MULTI-TAB
+    // MODAL GIAO DIỆN
     // ============================================================
 
     let modalHost = null;
@@ -302,18 +330,15 @@
 .badge { font-size: 10px; background: #0284c7; padding: 2px 7px; border-radius: 999px; font-weight: 700; }
 .close-btn { background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 22px; line-height: 1; }
 
-/* TABS */
 .tabs-wrapper { display: flex; align-items: center; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .tab-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: #94a3b8; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.15s ease; }
 .tab-btn.active { background: #0284c7; color: #fff; border-color: #38bdf8; }
 .add-tab-btn { background: rgba(56, 189, 248, 0.15); border: 1px dashed #0284c7; color: #38bdf8; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
-/* TAB HEADER CONTROLS */
 .tab-header-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
 .tab-name-input { flex: 1; background: rgba(15,23,42,.7); border: 1px solid rgba(255,255,255,.15); padding: 6px 10px; border-radius: 8px; color: #fff; font-size: 13px; outline: none; }
 .del-tab-btn { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 6px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
 
-/* FORMS */
 .form-group { margin-bottom: 12px; }
 label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: #cbd5e1; margin-bottom: 5px; }
 .label-val { color: #38bdf8; font-family: monospace; }
@@ -321,7 +346,6 @@ input[type="text"], select { width: 100%; box-sizing: border-box; background: rg
 input[type="text"]:focus, select:focus { border-color: #38bdf8; }
 input[type="range"] { width: 100%; cursor: pointer; }
 
-/* COLOR PICKER ROW */
 .color-picker-group { display: flex; align-items: center; gap: 10px; background: rgba(15,23,42,.4); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.08); }
 .color-input-native { width: 34px; height: 34px; border: none; padding: 0; background: transparent; cursor: pointer; border-radius: 6px; }
 .color-text-input { flex: 1; text-transform: uppercase; font-family: monospace; }
@@ -331,7 +355,6 @@ input[type="range"] { width: 100%; cursor: pointer; }
 .hint { font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.4; }
 .status { margin-top: 6px; padding: 7px 10px; border-radius: 6px; background: rgba(56,189,248,.1); color: #7dd3fc; font-family: monospace; font-size: 11px; }
 
-/* ACTIONS */
 .actions { display: flex; gap: 10px; margin-top: 18px; }
 button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
 .btn-primary { background: #0284c7; color: #fff; }
@@ -341,11 +364,10 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
 <div class="backdrop" id="backdrop">
     <div class="modal">
         <div class="header">
-            <div class="title">Cài đặt Font Chữ <span class="badge">v3.0 Multi-Tab</span></div>
+            <div class="title">Cài đặt Font Chữ <span class="badge">v3.1 Forum State</span></div>
             <button class="close-btn" id="closeBtn">&times;</button>
         </div>
 
-        <!-- TABS NAV -->
         <div class="tabs-wrapper">
             ${workingRules.map((r, i) => `
                 <button class="tab-btn ${i === activeTabIndex ? 'active' : ''}" data-idx="${i}">
@@ -355,16 +377,14 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
             <button class="add-tab-btn" id="addTabBtn">+ Thêm Tab</button>
         </div>
 
-        <!-- TAB RENAMING & DELETE -->
         <div class="tab-header-row">
             <input type="text" class="tab-name-input" id="tabNameInput" value="${rule.name}" placeholder="Tên gợi nhớ của Tab...">
-            <button class="del-tab-btn" id="delTabBtn" title="Xóa tab này">✕ Xóa Tab</button>
+            <button class="del-tab-btn" id="delTabBtn">✕ Xóa Tab</button>
         </div>
 
         <div class="form-group">
-            <label>CSS Selector đối tượng</label>
+            <label>CSS Selector</label>
             <input type="text" id="selectorInput" value="${rule.selector}" placeholder="h1, .message-body, .bbWrapper">
-            <div class="hint">Áp dụng font riêng biệt cho các class/thẻ khớp bộ chọn này.</div>
             <div class="status" id="selectorStatus">Đang kiểm tra...</div>
         </div>
 
@@ -373,7 +393,7 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
             <input type="text" id="fontInput" value="${rule.font}" placeholder="Inter, Arial, Times New Roman...">
         </div>
 
-        <!-- TÙY CHỌN MÀU CHỮ -->
+        <!-- MÀU SẮC -->
         <div class="form-group">
             <label>
                 <span>Màu chữ</span>
@@ -392,15 +412,18 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
             <input type="range" id="scaleInput" min="0.8" max="1.5" step="0.05" value="${rule.scale}">
         </div>
 
+        <!-- ĐỘ ĐẬM VỚI TÙY CHỌN AUTO -->
         <div class="form-group">
             <label>Độ đậm</label>
             <select id="weightSelect">
-                <option value="300" ${rule.weight === 300 ? "selected" : ""}>300 - Light</option>
-                <option value="400" ${rule.weight === 400 ? "selected" : ""}>400 - Regular</option>
-                <option value="500" ${rule.weight === 500 ? "selected" : ""}>500 - Medium</option>
-                <option value="600" ${rule.weight === 600 ? "selected" : ""}>600 - SemiBold</option>
-                <option value="700" ${rule.weight === 700 ? "selected" : ""}>700 - Bold</option>
+                <option value="auto" ${rule.weight === "auto" || !rule.weight ? "selected" : ""}>Auto - Giữ theo web (Khuyên dùng)</option>
+                <option value="300" ${rule.weight == 300 ? "selected" : ""}>300 - Light</option>
+                <option value="400" ${rule.weight == 400 ? "selected" : ""}>400 - Regular</option>
+                <option value="500" ${rule.weight == 500 ? "selected" : ""}>500 - Medium</option>
+                <option value="600" ${rule.weight == 600 ? "selected" : ""}>600 - SemiBold</option>
+                <option value="700" ${rule.weight == 700 ? "selected" : ""}>700 - Bold</option>
             </select>
+            <div class="hint">Chọn "Auto" để diễn đàn tự in đậm bài có cmt mới và để thường bài đã đọc.</div>
         </div>
 
         <div class="form-group">
@@ -443,7 +466,10 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
             rule.enableColor = shadow.getElementById("enableColorCheck").checked;
             rule.color = shadow.getElementById("colorTextInput").value.trim() || "#38bdf8";
             rule.scale = parseFloat(shadow.getElementById("scaleInput").value);
-            rule.weight = parseInt(shadow.getElementById("weightSelect").value, 10);
+
+            const selectedWeight = shadow.getElementById("weightSelect").value;
+            rule.weight = selectedWeight === "auto" ? "auto" : parseInt(selectedWeight, 10);
+
             rule.stroke = parseFloat(shadow.getElementById("strokeInput").value);
             rule.protectIcons = shadow.getElementById("protectIcons").checked;
             rule.protectCode = shadow.getElementById("protectCode").checked;
@@ -490,7 +516,6 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
             scaleInput.oninput = () => { scaleVal.textContent = scaleInput.value + "x"; };
             strokeInput.oninput = () => { strokeVal.textContent = strokeInput.value + "px"; };
 
-            // Logic đồng bộ màu
             enableColorCheck.onchange = () => {
                 const isEnabled = enableColorCheck.checked;
                 colorPicker.disabled = !isEnabled;
@@ -510,7 +535,6 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
                 }
             };
 
-            // Chuyển Tab
             shadow.querySelectorAll(".tab-btn").forEach(btn => {
                 btn.onclick = () => {
                     saveFormToCurrentRule();
@@ -519,7 +543,6 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
                 };
             });
 
-            // Thêm Tab mới
             addTabBtn.onclick = () => {
                 saveFormToCurrentRule();
                 const newIdx = workingRules.length + 1;
@@ -533,7 +556,6 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
                 renderModal();
             };
 
-            // Xóa Tab hiện tại
             delTabBtn.onclick = () => {
                 if (workingRules.length <= 1) {
                     alert("Anh cần giữ lại ít nhất một quy tắc cấu hình!");
@@ -599,7 +621,7 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
     }
 
     // ============================================================
-    // KHỞI ĐỘNG HỆ THỐNG
+    // KHỞI ĐỘNG
     // ============================================================
 
     const activeConfig = load() || DEFAULT_CONFIG;
