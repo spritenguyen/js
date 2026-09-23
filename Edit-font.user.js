@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Ultra Lite Font Engine – Multi Target (Forum State Edition)
+// @name         Ultra Lite Font Engine – Multi Target (Backup & Restore Edition)
 // @namespace    ultra-font-clean
-// @version      3.1.0
-// @description  Engine font đa tab, hỗ trợ màu sắc và bảo toàn trạng thái bài đã đọc / chưa đọc / có cmt mới trên diễn đàn.
+// @version      3.2.0
+// @description  Engine font đa tab, hỗ trợ màu sắc, bảo toàn trạng thái diễn đàn và sao lưu/khôi phục cài đặt (Export/Import JSON).
 // @match        *://*/*
 // @grant        GM_registerMenuCommand
 // @run-at       document-start
@@ -31,9 +31,9 @@
         scale: 1.0,
         enableColor: false,
         color: "#38bdf8",
-        weight: "auto", // Mặc định là auto để không phá hỏng độ đậm/nhạt của diễn đàn
+        weight: "auto",
         stroke: 0,
-        protectForumState: true, // Bảo tồn trạng thái đã đọc / có cmt mới
+        protectForumState: true,
         protectIcons: true,
         protectCode: true,
         protectImages: true
@@ -159,7 +159,7 @@
     }
 
     // ============================================================
-    // STYLESHEET ENGINE (ĐÃ VÁ LỖI FORUM STATE)
+    // STYLESHEET ENGINE
     // ============================================================
 
     function ensureGlobalStyle() {
@@ -179,7 +179,6 @@
     letter-spacing: -0.01em !important;
 }
 
-/* Chỉ can thiệp font-weight nếu người dùng không để Auto */
 [${TARGET_ATTR}][data-ultra-weight]:not([data-ultra-weight="auto"]) {
     font-weight: var(--ultra-weight) !important;
 }
@@ -188,11 +187,7 @@
     color: var(--ultra-color) !important;
 }
 
-/* =========================================================
-   BẢO TOÀN TRẠNG THÁI FORUM (CHƯA ĐỌC / CÓ CMT MỚI VS ĐÃ ĐỌC)
-   ========================================================= */
-
-/* 1. BÀI CÓ CMT MỚI HOẶC CHƯA ĐỌC: Luôn in đậm và hiển thị rõ nét */
+/* BẢO TOÀN TRẠNG THÁI BÀI VIẾT DIỄN ĐÀN */
 .is-unread [${TARGET_ATTR}],
 [class*="unread"] [${TARGET_ATTR}],
 [${TARGET_ATTR}].is-unread,
@@ -201,7 +196,6 @@
     opacity: 1 !important;
 }
 
-/* 2. BÀI ĐÃ ĐỌC: Tự động làm nhạt màu nhẹ để phân biệt rõ ràng */
 .structItem:not(.is-unread) [${TARGET_ATTR}][data-ultra-color="true"],
 [class*="discussion-item"]:not(.is-unread) [${TARGET_ATTR}][data-ultra-color="true"],
 [class*="thread-item"]:not([class*="unread"]) [${TARGET_ATTR}][data-ultra-color="true"],
@@ -278,7 +272,6 @@ tr:not(.is-unread):not([class*="unread"]) [${TARGET_ATTR}][data-ultra-color="tru
                 el.style.setProperty("--ultra-lh", `${metrics.lineHeightRatio}`);
                 el.style.setProperty("--ultra-stroke", `${rule.stroke || 0}px`);
 
-                // Thiết lập Font Weight
                 if (rule.weight && rule.weight !== "auto") {
                     el.setAttribute("data-ultra-weight", String(rule.weight));
                     el.style.setProperty("--ultra-weight", String(rule.weight));
@@ -287,7 +280,6 @@ tr:not(.is-unread):not([class*="unread"]) [${TARGET_ATTR}][data-ultra-color="tru
                     el.style.removeProperty("--ultra-weight");
                 }
 
-                // Thiết lập Màu sắc
                 if (rule.enableColor && rule.color) {
                     el.setAttribute("data-ultra-color", "true");
                     el.style.setProperty("--ultra-color", rule.color);
@@ -300,7 +292,7 @@ tr:not(.is-unread):not([class*="unread"]) [${TARGET_ATTR}][data-ultra-color="tru
     }
 
     // ============================================================
-    // MODAL GIAO DIỆN
+    // MODAL GIAO DIỆN (CÓ IMPORT / EXPORT)
     // ============================================================
 
     let modalHost = null;
@@ -355,7 +347,12 @@ input[type="range"] { width: 100%; cursor: pointer; }
 .hint { font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.4; }
 .status { margin-top: 6px; padding: 7px 10px; border-radius: 6px; background: rgba(56,189,248,.1); color: #7dd3fc; font-family: monospace; font-size: 11px; }
 
-.actions { display: flex; gap: 10px; margin-top: 18px; }
+/* BACKUP & RESTORE ROW */
+.backup-row { display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.12); }
+.btn-backup { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; padding: 7px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.15s ease; }
+.btn-backup:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+.actions { display: flex; gap: 10px; margin-top: 14px; }
 button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
 .btn-primary { background: #0284c7; color: #fff; }
 .btn-danger { background: rgba(239,68,68,.15); color: #fca5a5; border: 1px solid rgba(239,68,68,.3) !important; }
@@ -364,7 +361,7 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
 <div class="backdrop" id="backdrop">
     <div class="modal">
         <div class="header">
-            <div class="title">Cài đặt Font Chữ <span class="badge">v3.1 Forum State</span></div>
+            <div class="title">Cài đặt Font Chữ <span class="badge">v3.2</span></div>
             <button class="close-btn" id="closeBtn">&times;</button>
         </div>
 
@@ -393,7 +390,6 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
             <input type="text" id="fontInput" value="${rule.font}" placeholder="Inter, Arial, Times New Roman...">
         </div>
 
-        <!-- MÀU SẮC -->
         <div class="form-group">
             <label>
                 <span>Màu chữ</span>
@@ -412,7 +408,6 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
             <input type="range" id="scaleInput" min="0.8" max="1.5" step="0.05" value="${rule.scale}">
         </div>
 
-        <!-- ĐỘ ĐẬM VỚI TÙY CHỌN AUTO -->
         <div class="form-group">
             <label>Độ đậm</label>
             <select id="weightSelect">
@@ -423,7 +418,6 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
                 <option value="600" ${rule.weight == 600 ? "selected" : ""}>600 - SemiBold</option>
                 <option value="700" ${rule.weight == 700 ? "selected" : ""}>700 - Bold</option>
             </select>
-            <div class="hint">Chọn "Auto" để diễn đàn tự in đậm bài có cmt mới và để thường bài đã đọc.</div>
         </div>
 
         <div class="form-group">
@@ -444,6 +438,13 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
                 <label>Giữ kích thước emoji</label>
                 <input type="checkbox" id="protectImages" ${rule.protectImages ? "checked" : ""}>
             </div>
+        </div>
+
+        <!-- HÀNG XUẤT / NHẬP JSON -->
+        <div class="backup-row">
+            <button class="btn-backup" id="exportBtn">📤 Xuất file JSON</button>
+            <button class="btn-backup" id="importBtn">📥 Nhập file JSON</button>
+            <input type="file" id="importFileInput" accept=".json,application/json" style="display: none;">
         </div>
 
         <div class="actions">
@@ -495,6 +496,11 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
             const colorPicker = shadow.getElementById("colorPicker");
             const colorTextInput = shadow.getElementById("colorTextInput");
             const colorVal = shadow.getElementById("colorVal");
+
+            // Nút Xuất / Nhập
+            const exportBtn = shadow.getElementById("exportBtn");
+            const importBtn = shadow.getElementById("importBtn");
+            const importFileInput = shadow.getElementById("importFileInput");
 
             function updateStatus() {
                 const sel = selectorInput.value.trim();
@@ -564,6 +570,85 @@ button.btn { flex: 1; padding: 10px 14px; border-radius: 8px; font-size: 13px; f
                 workingRules.splice(activeTabIndex, 1);
                 activeTabIndex = Math.max(0, activeTabIndex - 1);
                 renderModal();
+            };
+
+            // ====================================================
+            // XỬ LÝ XUẤT FILE JSON
+            // ====================================================
+            exportBtn.onclick = () => {
+                saveFormToCurrentRule();
+                const exportData = {
+                    version: "3.2.0",
+                    domain: location.hostname,
+                    exportedAt: new Date().toISOString(),
+                    rules: workingRules
+                };
+
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `ultra_font_${location.hostname.replace(/[^a-zA-Z0-9_-]/g, "_")}_config.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // ====================================================
+            // XỬ LÝ NHẬP FILE JSON
+            // ====================================================
+            importBtn.onclick = () => {
+                importFileInput.value = "";
+                importFileInput.click();
+            };
+
+            importFileInput.onchange = (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const parsed = JSON.parse(event.target.result);
+                        let importedRules = [];
+
+                        if (Array.isArray(parsed.rules)) {
+                            importedRules = parsed.rules;
+                        } else if (Array.isArray(parsed)) {
+                            importedRules = parsed;
+                        } else if (parsed && typeof parsed === "object" && parsed.selector) {
+                            // Tương thích ngược cấu hình đơn v2
+                            importedRules = [{
+                                ...DEFAULT_RULE,
+                                name: "Quy tắc nhập",
+                                selector: parsed.selector,
+                                font: parsed.font || DEFAULT_RULE.font,
+                                scale: parsed.scale || DEFAULT_RULE.scale
+                            }];
+                        } else {
+                            throw new Error("Cấu trúc file không đúng định dạng Ultra Font!");
+                        }
+
+                        if (importedRules.length === 0) {
+                            throw new Error("File cấu hình rỗng!");
+                        }
+
+                        // Gán vào dữ liệu đang chỉnh sửa
+                        workingRules = importedRules.map((r, idx) => ({
+                            ...DEFAULT_RULE,
+                            ...r,
+                            id: r.id || "rule_" + Date.now() + "_" + idx
+                        }));
+                        activeTabIndex = 0;
+
+                        renderModal();
+                        alert("Đã nạp file cấu hình thành công! Anh hãy xem lại và bấm 'Lưu & Áp dụng'.");
+                    } catch (err) {
+                        alert("Lỗi nhập file: " + err.message);
+                    }
+                };
+                reader.readAsText(file);
             };
 
             function closeModal() {
